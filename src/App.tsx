@@ -3,7 +3,6 @@ import {
   Slide,
   Heading,
   Text,
-  Appear,
   CodePane,
   Box,
   FlexBox,
@@ -58,42 +57,6 @@ const template = () => (
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
-// chip: use flexShrink so it doesn't stretch in FlexBox
-const chip = (label: string) => (
-  <Box
-    backgroundColor="tertiary"
-    padding="3px 9px"
-    borderRadius="4px"
-    style={{ display: "inline-block", flexShrink: 0 }}
-  >
-    <Text fontSize="13px" color="quinary" margin={0}>
-      {label}
-    </Text>
-  </Box>
-);
-
-// Custom bullet — avoids Spectacle's ListItem large default spacing
-const bullet = (text: React.ReactNode, dim = false) => (
-  <FlexBox alignItems="flex-start" marginBottom="3px">
-    <Text
-      color="quaternary"
-      fontSize="12px"
-      margin="1px 5px 0 0"
-      style={{ flexShrink: 0 }}
-    >
-      •
-    </Text>
-    <Text
-      color="quinary"
-      fontSize="14px"
-      margin={0}
-      opacity={dim ? 0.8 : 1}
-      lineHeight={1.3 as any}
-    >
-      {text}
-    </Text>
-  </FlexBox>
-);
 
 // ─── Code samples ─────────────────────────────────────────────────────────────
 
@@ -337,42 +300,6 @@ const lazyMemoCode = `static async getIsIDBEnabled(): Promise<boolean> {
   return theInstance._internal._isIDBEnabled;
 }`;
 
-const useAuthCode = `// libs/auth/src/hooks/useAuth.ts
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return {
-    user: ctx.user,
-    isAuthenticated: !!ctx.user,
-    login: ctx.login,   // triggers OIDC redirect
-    logout: ctx.logout,
-  };
-}
-
-// Usage in any app inside the monorepo
-// import { useAuth } from '@acme/auth';
-// const { user, login, logout } = useAuth();`;
-
-const reactQueryCode = `// hooks/useEpisodes.ts
-import { useQuery } from '@tanstack/react-query';
-import { fetchEpisodes } from '../api/episodes';
-import type { Episode } from '../types';
-
-export function useEpisodes(podcastId: string) {
-  return useQuery<Episode[]>({
-    queryKey: ['episodes', podcastId],
-    queryFn: () => fetchEpisodes(podcastId),
-    staleTime: 1000 * 60 * 5,  // 5 min cache
-  });
-}
-
-// MSW handler (src/mocks/handlers.ts)
-http.get('/api/podcasts/:id/episodes', ({ params }) => {
-  return HttpResponse.json(mockEpisodes(params.id));
-});`;
 
 // ─── Slide wrapper with consistent padding ────────────────────────────────────
 // Spectacle Slide fills viewport; we use absolute positioning so height is reliable
