@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@mvb-fe/auth · Discovery Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #FAFAF9;
+      --surface: #FFFFFF;
+      --border:  #E5E5E3;
+      --text:    #1A1A18;
+      --muted:   #737370;
+      --subtle:  #A8A8A5;
+      --code-bg: #F0F0EE;
+
+      --green:   #166534;
+      --green-bg:#DCFCE7;
+      --blue:    #1e40af;
+      --blue-bg: #DBEAFE;
+      --amber:   #92400E;
+      --amber-bg:#FEF3C7;
+      --red:     #991B1B;
+      --red-bg:  #FEE2E2;
+      --purple:  #5B21B6;
+      --purple-bg:#EDE9FE;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 28px;
+      margin-bottom: 56px;
+    }
+    .breadcrumb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+    .breadcrumb span { color: var(--subtle); margin: 0 6px; }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .page-desc {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 600px;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      margin-bottom: 64px;
+    }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .section-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      max-width: 680px;
+      line-height: 1.65;
+    }
+    .section-desc code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--code-bg);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+
+    /* ── DIAGRAM CARD ── */
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .diagram-card .mermaid {
+      padding: 32px 24px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .diagram-card .mermaid svg {
+      max-width: 100%;
+    }
+
+    /* ── ANNOTATION LIST ── */
+    .annotations {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .ann {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+    .ann-badge {
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      height: fit-content;
+      margin-top: 1px;
+    }
+    .ann.green  { background: var(--green-bg);  color: var(--green); }
+    .ann.green .ann-badge  { background: #bbf7d0; }
+    .ann.blue   { background: var(--blue-bg);   color: var(--blue); }
+    .ann.blue .ann-badge   { background: #bfdbfe; }
+    .ann.amber  { background: var(--amber-bg);  color: var(--amber); }
+    .ann.amber .ann-badge  { background: #fde68a; }
+    .ann.red    { background: var(--red-bg);    color: var(--red); }
+    .ann.red .ann-badge    { background: #fecaca; }
+    .ann.purple { background: var(--purple-bg); color: var(--purple); }
+    .ann.purple .ann-badge { background: #ddd6fe; }
+
+    /* ── KEY TABLE ── */
+    .key-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    .key-table th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--code-bg);
+      font-weight: 600;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .key-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .key-table tr:last-child td { border-bottom: none; }
+    .key-table code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .key-table td:first-child { color: var(--muted); white-space: nowrap; }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+
+    /* ── FOOTER ── */
+    footer {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--subtle);
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header class="page-header">
+    <div class="breadcrumb">
+      packages/auth<span>/</span>src/helpers/config<span>/</span>discovery.ts
+    </div>
+    <h1>Discovery Flow — OIDC openid-configuration</h1>
+    <p class="page-desc">
+      分析 <code>getDiscoveryField()</code> 的三層快取策略與所有 caller 的 endpoint 消費關係，
+      涵蓋 Memory → LocalStorage → Network 的查找順序與版本化儲存 Key 設計。
+    </p>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — Caller Context
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Caller 全覽 — 誰消費哪個 OIDC Endpoint</h2>
+    </div>
+    <p class="section-desc">
+      <code>getDiscoveryField(target)</code> 是所有 OIDC endpoint 的統一入口。
+      5 個 helper 各自帶入不同的 <code>keyof Discovery</code> 欄位名稱，
+      取回 IdP 提供的實際 URL 後再發出對應的 HTTP 請求。
+    </p>
+    <div class="diagram-card">
+      <div class="mermaid">
+%%{init: { "theme": "neutral", "themeVariables": { "fontSize": "14px" } }}%%
+graph LR
+    subgraph REDIRECT ["🔀 Redirect Helpers"]
+        direction TB
+        SI["getSignInUrl()"]
+        SO["getSignOutUrl()"]
+    end
+
+    subgraph TOKEN ["🎫 Token Helpers"]
+        direction TB
+        FT["fetchTokenInfo()"]
+        RT["revokeTokenInfo()"]
+    end
+
+    subgraph USER ["👤 User Helpers"]
+        FU["fetchUserInfoOnce()"]
+    end
+
+    GDF(["getDiscoveryField(target)"])
+
+    SI -- "authorization_endpoint" --> GDF
+    SO -- "end_session_endpoint" --> GDF
+    FT -- "token_endpoint" --> GDF
+    RT -- "revocation_endpoint" --> GDF
+    FU -- "userinfo_endpoint" --> GDF
+
+    GDF --> IDP[("IdP\n/.well-known\n/openid-configuration")]
+
+    subgraph CACHE ["Cache"]
+        direction TB
+        MEM[("L1 Memory\nConfig.oidcDiscovery")]
+        LS[("L2 localStorage\nVersioned Key")]
+    end
+
+    GDF <--> CACHE
+
+    style IDP fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+    style MEM fill:#d1fae5,stroke:#10b981,color:#065f46
+    style LS  fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    style GDF fill:#ede9fe,stroke:#8b5cf6,color:#3b0764
+      </div>
+    </div>
+
+    <div class="annotations">
+      <div class="ann blue">
+        <span class="ann-badge">IdP</span>
+        <div>IdP 的 <code>openid-configuration</code> 包含所有 OIDC endpoint URL，是唯一的 source of truth</div>
+      </div>
+      <div class="ann purple">
+        <span class="ann-badge">GDF</span>
+        <div><code>getDiscoveryField</code> 是統一入口，所有 helper 不直接 fetch，而是透過它取得 endpoint</div>
+      </div>
+      <div class="ann green">
+        <span class="ann-badge">L1</span>
+        <div>Memory 快取（singleton），整個 session 期間只需 fetch 一次，後續請求直接命中</div>
+      </div>
+      <div class="ann amber">
+        <span class="ann-badge">L2</span>
+        <div>localStorage 快取（可選），跨頁面重新整理後仍有效，版本號與套件版本綁定</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — getDiscoveryField Flowchart
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>getDiscoveryField() — 三層查找流程</h2>
+    </div>
+    <p class="section-desc">
+      查找優先順序：<strong>Memory → localStorage → Network</strong>。
+      任何一層命中即短路回傳，避免不必要的 HTTP 請求。
+      每次 fetch 成功後會同時 hydrate Memory 與（若啟用）localStorage，
+      讓後續查找直接命中 L1 而不需再往下查。
+    </p>
+    <div class="diagram-card">
+      <div class="mermaid">
+%%{init: { "theme": "neutral", "themeVariables": { "fontSize": "14px" } }}%%
+flowchart TD
+    CALL(["getDiscoveryField(target)"])
+
+    CALL --> L1{"L1 Memory\nConfig.oidcDiscovery\n有目標欄位？"}
+
+    L1 -- "✅ Hit" --> RET(["return target value"])
+    L1 -- "❌ Miss" --> CE{"enableDiscoveryCache\n已啟用？"}
+
+    CE -- "true" --> LS_READ["getDiscoveryInStorage()\n讀取 localStorage"]
+    CE -- "false ➜ skip cache" --> FETCH
+
+    LS_READ --> L2{"L2 Cache\nlocalStorage 有快取？"}
+    L2 -- "❌ Miss" --> FETCH
+    L2 -- "✅ Hit" --> HYDRATE1["hydrate Config.oidcDiscovery\n(同步到 L1)"]
+
+    HYDRATE1 --> L2F{"快取包含\n目標欄位？"}
+    L2F -- "✅ Yes" --> RET
+    L2F -- "❌ No" --> FETCH
+
+    FETCH["fetchDiscovery()\nHTTP GET\n/.well-known/openid-configuration"]
+
+    FETCH --> OK{"response.ok\n&& data 存在？"}
+
+    OK -- "❌ Fail / null" --> ERR
+    OK -- "✅ Success" --> SAVE_Q{"enableDiscoveryCache？"}
+
+    SAVE_Q -- "true" --> SAVE["setDiscoveryInStorage(data)\n寫入 localStorage L2"]
+    SAVE_Q -- "false" --> HYDRATE2
+    SAVE --> HYDRATE2
+
+    HYDRATE2["hydrate Config.oidcDiscovery\n(同步到 L1)"]
+
+    HYDRATE2 --> FIELD{"data 包含\n目標欄位？"}
+    FIELD -- "✅ Yes" --> RET
+    FIELD -- "❌ No" --> ERR
+
+    ERR(["exConsole.error()\nonCriticalError({ message })\nreturn undefined"])
+
+    style CALL  fill:#ede9fe,stroke:#8b5cf6,color:#3b0764
+    style RET   fill:#d1fae5,stroke:#10b981,color:#065f46
+    style ERR   fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+    style FETCH fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+    style L1    fill:#f0fdf4,stroke:#86efac,color:#14532d
+    style L2    fill:#fefce8,stroke:#fde047,color:#713f12
+    style SAVE  fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    style HYDRATE1 fill:#f0fdf4,stroke:#86efac,color:#14532d
+    style HYDRATE2 fill:#f0fdf4,stroke:#86efac,color:#14532d
+      </div>
+    </div>
+
+    <div class="annotations">
+      <div class="ann green">
+        <span class="ann-badge">L1 Hit</span>
+        <div>最快路徑。Singleton 記憶體命中，同一個 browser session 中第一次 fetch 成功後即永久有效</div>
+      </div>
+      <div class="ann amber">
+        <span class="ann-badge">L2 Hit</span>
+        <div>跨頁面重整有效。localStorage 命中後會同步 hydrate L1，使後續查找直接命中 Memory</div>
+      </div>
+      <div class="ann blue">
+        <span class="ann-badge">Network</span>
+        <div>冷啟動或快取失效時觸發。使用 <code>to()</code> 工具函式包裝，避免 throw 中斷呼叫端流程</div>
+      </div>
+      <div class="ann red">
+        <span class="ann-badge">Error</span>
+        <div>所有失敗路徑最終收斂到 <code>onCriticalError</code> callback，由呼叫端決定錯誤處理策略</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — fetchDiscovery internals
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>fetchDiscovery() — HTTP 請求細節</h2>
+    </div>
+    <p class="section-desc">
+      URL 由 <code>getDiscoveryPath()</code> 動態組合，根據
+      <code>opIssuer</code>（MVB / VS）與 <code>authEnv</code>（local / dev / stage / prod）
+      選出對應的 base URL，再附加固定的 endpoint 路徑。
+    </p>
+    <div class="diagram-card">
+      <div class="mermaid">
+%%{init: { "theme": "neutral", "themeVariables": { "fontSize": "14px" } }}%%
+flowchart LR
+    subgraph BUILD ["getDiscoveryPath()"]
+        direction TB
+        CFG["Config.getClientOptions\n(authEnv, opIssuer)"]
+        MAP["baseURLMap\nopIssuer → authEnv → baseURL"]
+        EP["+ /.well-known/openid-configuration"]
+        CFG --> MAP --> EP
+    end
+
+    subgraph FETCH_DETAIL ["fetchDiscovery()"]
+        direction TB
+        REQ["fetch(path, { method: GET })"]
+        CHK{"response.ok?"}
+        JSON["response.json()\nas Promise&lt;Discovery&gt;"]
+        CHK2{"result 存在？"}
+        OK2["return Discovery"]
+        NULL["return null"]
+        REQ --> CHK
+        CHK -- "✅" --> JSON --> CHK2
+        CHK2 -- "✅" --> OK2
+        CHK2 -- "❌" --> NULL
+        CHK -- "❌" --> NULL
+    end
+
+    BUILD --> FETCH_DETAIL
+
+    subgraph ENVS ["baseURLMap (MVB)"]
+        direction TB
+        E1["local/dev → auth.dev.myviewboard.com"]
+        E2["stage   → auth.stage.myviewboard.com"]
+        E3["prod    → auth.myviewboard.com"]
+    end
+
+    MAP -.->|"MVB example"| ENVS
+
+    style OK2  fill:#d1fae5,stroke:#10b981,color:#065f46
+    style NULL fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+      </div>
+    </div>
+
+    <div class="annotations">
+      <div class="ann amber">
+        <span class="ann-badge">baseURLMap</span>
+        <div>支援兩個 OP Issuer：<code>MVB</code>（myviewboard.com）與 <code>VS</code>（viewsonic.com），各有 4 個環境</div>
+      </div>
+      <div class="ann red">
+        <span class="ann-badge">注意</span>
+        <div><code>fetchDiscovery</code> 本身若 network 例外會 throw；呼叫端 <code>getDiscoveryField</code> 透過 <code>to()</code> 包裝攔截</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 — Storage Key Design
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>localStorage Key 設計 — 版本化自動失效</h2>
+    </div>
+    <p class="section-desc">
+      儲存 Key 包含套件版本號，確保套件升級後自動使用新 Key，舊版快取自然失效而不需主動清除。
+      <code>clearDiscoveryInStorage()</code> 則使用不含版本的前綴進行
+      <code>startsWith</code> 掃描，一次清除所有歷史版本的殘留快取。
+    </p>
+
+    <div class="diagram-card">
+      <div class="mermaid">
+%%{init: { "theme": "neutral", "themeVariables": { "fontSize": "14px" } }}%%
+flowchart LR
+    subgraph KEY_WITH_VER ["getDiscoveryStorageKey(needVersion = true)"]
+        direction LR
+        A1["opIssuer\ne.g. MVB"]
+        A2["authEnv\ne.g. dev"]
+        A3["'discovery'"]
+        A4["package.version\ne.g. 0.1.3"]
+        A1 --> |"_"| A2 --> |"_"| A3 --> |"_"| A4
+    end
+
+    subgraph KEY_NO_VER ["getDiscoveryStorageKey(needVersion = false)"]
+        direction LR
+        B1["opIssuer"]
+        B2["authEnv"]
+        B3["'discovery'"]
+        B1 --> |"_"| B2 --> |"_"| B3
+    end
+
+    subgraph USAGE ["使用場景"]
+        direction TB
+        W["setDiscoveryInStorage\ngetDiscoveryInStorage\n→ needVersion = true\n讀寫精確版本的 Key"]
+        C["clearDiscoveryInStorage\n→ needVersion = false\nstartsWith 前綴掃描\n清除所有版本殘留"]
+    end
+
+    KEY_WITH_VER --> W
+    KEY_NO_VER --> C
+
+    W --> LS1[("localStorage\nMVB_dev_discovery_0.1.3")]
+    C --> LS1
+    C --> LS2[("localStorage\nMVB_dev_discovery_0.1.2\n（舊版自動被清除）")]
+
+    style LS1 fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    style LS2 fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+    style W   fill:#d1fae5,stroke:#10b981,color:#065f46
+    style C   fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+      </div>
+    </div>
+
+    <table class="key-table">
+      <thead>
+        <tr>
+          <th>情境</th>
+          <th>Key 格式</th>
+          <th>範例</th>
+          <th>說明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>讀 / 寫快取</td>
+          <td><code>{opIssuer}_{authEnv}_discovery_{version}</code></td>
+          <td><code>MVB_dev_discovery_0.1.3</code></td>
+          <td>精確版本，套件升級後自動改用新 key，舊快取被棄用但不佔用</td>
+        </tr>
+        <tr>
+          <td>清除所有版本</td>
+          <td><code>{opIssuer}_{authEnv}_discovery</code>（前綴）</td>
+          <td><code>MVB_dev_discovery</code></td>
+          <td><code>startsWith</code> 掃描，一次清除 MVB_dev_discovery_* 所有歷史版本 key</td>
+        </tr>
+        <tr>
+          <td>快取失效條件</td>
+          <td>套件版本號變更</td>
+          <td><code>0.1.2 → 0.1.3</code></td>
+          <td>不需手動失效；只需升級套件版本，舊快取的 key 不再被讀取</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="annotations" style="margin-top:14px">
+      <div class="ann purple">
+        <span class="ann-badge">設計亮點</span>
+        <div>版本綁定 Key 是一種 implicit cache invalidation，無需額外的版本比對邏輯，依賴 key 不同即自然失效</div>
+      </div>
+      <div class="ann blue">
+        <span class="ann-badge">清除策略</span>
+        <div><code>clearDiscoveryInStorage</code> 使用 <code>Object.keys(localStorage)</code> 前綴過濾，跨版本清理不留殘留</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 — Function Map
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>discovery.ts — 函式依賴關係</h2>
+    </div>
+    <p class="section-desc">
+      模組內 6 個 export function 的呼叫關係，以及對外部依賴（<code>Config</code>、<code>safeLocalStorage</code>、<code>fetch</code>）的引用。
+    </p>
+    <div class="diagram-card">
+      <div class="mermaid">
+%%{init: { "theme": "neutral", "themeVariables": { "fontSize": "13px" } }}%%
+graph TD
+    subgraph DISCOVERY ["discovery.ts (exports)"]
+        GDF["getDiscoveryField(target)"]
+        GDP["getDiscoveryPath()"]
+        FD["fetchDiscovery()"]
+        GDSK["getDiscoveryStorageKey(needVersion)"]
+        SDIS["setDiscoveryInStorage(discovery)"]
+        GDIS["getDiscoveryInStorage()"]
+        CDIS["clearDiscoveryInStorage()"]
+    end
+
+    GDF --> GDP
+    GDF --> GDIS
+    GDF --> FD
+    GDF --> SDIS
+
+    GDP --> CONFIG["Config.getClientOptions\n(authEnv, opIssuer)"]
+    GDP --> BASEMAP["baseURLMap"]
+
+    GDSK --> CONFIG2["Config.getClientOptions\n(authEnv, opIssuer)"]
+    GDSK --> PKG["package.json\n.version"]
+
+    SDIS --> GDSK
+    SDIS --> SLS["safeLocalStorage\n.setItem()"]
+
+    GDIS --> GDSK
+    GDIS --> GLS["safeLocalStorage\n.getItem()"]
+
+    CDIS --> GDSK
+    CDIS --> RLS["safeLocalStorage\n.removeItem()"]
+
+    FD --> GDP
+    FD --> NATIVEFETCH["window.fetch()"]
+
+    GDF --> CONFIG3["Config.oidcDiscovery\n(getter / setter)"]
+    GDF --> ERR2["exConsole.error()\nonCriticalError()"]
+
+    style GDF fill:#ede9fe,stroke:#8b5cf6,color:#3b0764
+    style CONFIG  fill:#f0fdf4,stroke:#10b981,color:#065f46
+    style CONFIG2 fill:#f0fdf4,stroke:#10b981,color:#065f46
+    style CONFIG3 fill:#f0fdf4,stroke:#10b981,color:#065f46
+    style NATIVEFETCH fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+    style ERR2 fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    packages/auth/src/helpers/config/discovery.ts &nbsp;·&nbsp;
+    @mvb-fe/auth &nbsp;·&nbsp;
+    Analysed 2026-03-11
+  </footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    flowchart: { curve: 'basis', padding: 20 },
+    fontFamily: 'Inter, sans-serif',
+  });
+</script>
+</body>
+</html>

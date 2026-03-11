@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@mvb-fe · Nx Monorepo Tech Stack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f4ede6;
+      --surface:  #ece3d8;
+      --card:     #ece3d8;
+      --card-hov: #e2d5c5;
+      --border:   rgba(90, 60, 40, 0.14);
+      --text:     #2a2018;
+      --muted:    #7a6050;
+      --subtle:   #c0a898;
+
+      --core:     #5a8aa0;   /* dusty teal   — Nx */
+      --quality:  #a06040;   /* dusty amber  — Code Quality */
+      --workflow: #7a5a90;   /* dusty violet — Git Workflow */
+      --docs:     #5a8a70;   /* dusty sage   — Documentation */
+      --deps:     #9a8040;   /* dusty gold   — Deps */
+      --registry: #9e6e62;   /* dusty rose   — Package Registry */
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    main { max-width: 1360px; margin: 0 auto; }
+
+    /* ══ HERO ══ */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 48px;
+      padding: 60px 64px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 5px 14px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--core);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 460px;
+    }
+
+    /* Static Nx badge */
+    .nx-badge {
+      width: 160px; height: 160px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .nx-badge img { width: 64px; height: 64px; }
+    .nx-badge span {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--core);
+    }
+
+    /* ══ STATS BAR ══ */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      padding: 20px 40px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val {
+      font-size: 30px;
+      font-weight: 700;
+    }
+    .stat-lbl {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ══ CATEGORY GRID ══ */
+    .grid-wrapper {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .category { background: var(--bg); padding: 40px 48px; }
+
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .cat-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .cat-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .cat-rule { flex: 1; height: 1px; background: var(--border); }
+
+    /* ══ TOOL CARD ══ */
+    .tools { display: flex; flex-direction: column; gap: 10px; }
+
+    .card {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent, var(--border));
+      border-radius: 10px;
+      cursor: default;
+      transition: background 0.15s;
+    }
+    .card:hover { background: var(--card-hov); }
+
+    .icon-box {
+      width: 52px; height: 52px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--icon-bg, rgba(0,0,0,0.04));
+    }
+    .icon-box img { width: 28px; height: 28px; object-fit: contain; }
+
+    .card-info { min-width: 0; }
+    .card-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: var(--tag-bg, rgba(0,0,0,0.06));
+      color: var(--tag-col, var(--muted));
+    }
+
+    /* ══ LIFECYCLE FLOW ══ */
+    .flow-section {
+      padding: 48px 64px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-eyebrow {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .phase {
+      flex: 1;
+      min-width: 130px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .phase-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .phase-tools { display: flex; flex-direction: column; gap: 7px; }
+    .phase-tool {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .phase-note { font-size: 11px; opacity: 0.5; margin-left: 14px; }
+
+    .arrow {
+      display: flex; align-items: center; padding: 0 8px; flex-shrink: 0;
+    }
+    .arrow svg { color: var(--subtle); }
+
+    /* ══ FOOTER ══ */
+    footer {
+      padding: 24px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+    .footer-left, .footer-right {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer-right { color: var(--subtle); }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero">
+    <div>
+      <div class="hero-eyebrow">@mvb-fe &nbsp;·&nbsp; pnpm workspace &nbsp;·&nbsp; Azure Artifacts</div>
+      <h1>Nx Monorepo<br /><em>Tech Stack</em></h1>
+      <p class="hero-sub">
+        從程式碼品質到發布流程的完整工具生態系統，
+        涵蓋 13 個核心工具跨 6 大類別。
+      </p>
+    </div>
+    <div class="nx-badge">
+      <img src="https://cdn.simpleicons.org/nx/5a8aa0" alt="Nx" />
+      <span>Monorepo</span>
+    </div>
+  </header>
+
+  <!-- ═══ STATS ═══ -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-val" style="color:var(--core)">6</span>
+      <span class="stat-lbl">Published Packages</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--workflow)">13</span>
+      <span class="stat-lbl">Core Tools</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--docs)">6</span>
+      <span class="stat-lbl">Tool Categories</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--registry);font-size:18px;padding-top:6px">Azure Artifacts</span>
+      <span class="stat-lbl">Private Registry</span>
+    </div>
+  </div>
+
+  <!-- ═══ CATEGORY GRID ═══ -->
+  <div class="grid-wrapper">
+
+    <!-- ── 1. Monorepo Core ── -->
+    <div class="category" style="grid-column: 1 / -1; padding-bottom: 32px;">
+      <div class="cat-header">
+        <div class="cat-pip" style="background:var(--core)"></div>
+        <span class="cat-title">Monorepo Core</span>
+        <div class="cat-rule"></div>
+      </div>
+      <div class="tools" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <div class="card" style="--accent:var(--core);grid-column:1/-1">
+          <div class="icon-box" style="--icon-bg:rgba(90,138,160,0.12)">
+            <img src="https://cdn.simpleicons.org/nx/5a8aa0" alt="Nx" />
+          </div>
+          <div class="card-info">
+            <div class="card-name">Nx</div>
+            <div class="card-desc">智慧型 Monorepo 建構系統。透過 Computation Cache 避免重複建構，支援 Affected 指令只跑受影響的專案。提供 task pipeline、dependency graph 視覺化，以及 Executor / Generator 擴充機制。</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(90,138,160,0.12);--tag-col:var(--core)">Build System</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2. Code Quality ── -->
+    <div class="category">
+      <div class="cat-header">
+        <div class="cat-pip" style="background:var(--quality)"></div>
+        <span class="cat-title">Code Quality</span>
+        <div class="cat-rule"></div>
+      </div>
+      <div class="tools">
+
+        <div class="card" style="--accent:#5a4a90">
+          <div class="icon-box" style="--icon-bg:rgba(90,74,144,0.1)">
+            <img src="https://cdn.simpleicons.org/eslint/5a4a90" alt="ESLint" />
+          </div>
+          <div class="card-info">
+            <div class="card-name">ESLint</div>
+            <div class="card-desc">靜態程式碼分析，強制 <code style="font-family:monospace">no-console</code> 規則與模組邊界限制（@nx/enforce-module-boundaries）</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(90,74,144,0.1);--tag-col:#5a4a90">Linter</span>
+        </div>
+
+        <div class="card" style="--accent:#a08040">
+          <div class="icon-box" style="--icon-bg:rgba(160,128,64,0.1)">
+            <img src="https://cdn.simpleicons.org/prettier/a08040" alt="Prettier" />
+          </div>
+          <div class="card-info">
+            <div class="card-name">Prettier</div>
+            <div class="card-desc">強制統一的程式碼格式，消除風格爭論，與 ESLint 協同運作</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(160,128,64,0.1);--tag-col:#a08040">Formatter</span>
+        </div>
+
+        <div class="card" style="--accent:var(--quality)">
+          <div class="icon-box" style="--icon-bg:rgba(160,96,64,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <circle cx="8" cy="10" r="4" stroke="#a06040" stroke-width="1.8"/>
+              <circle cx="8" cy="20" r="4" stroke="#a06040" stroke-width="1.8"/>
+              <line x1="11.5" y1="8" x2="26" y2="15" stroke="#a06040" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="11.5" y1="22" x2="26" y2="15" stroke="#a06040" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="8" cy="10" r="1.5" fill="#a06040"/>
+              <circle cx="8" cy="20" r="1.5" fill="#a06040"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Knip</div>
+            <div class="card-desc">偵測未使用的程式碼、exports 與 dependencies，主動清除技術債</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(160,96,64,0.1);--tag-col:var(--quality)">Dead Code</span>
+        </div>
+
+        <div class="card" style="--accent:var(--deps)">
+          <div class="icon-box" style="--icon-bg:rgba(154,128,64,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <circle cx="15" cy="6"  r="3.5" stroke="#9a8040" stroke-width="1.8"/>
+              <circle cx="6"  cy="22" r="3.5" stroke="#9a8040" stroke-width="1.8"/>
+              <circle cx="24" cy="22" r="3.5" stroke="#9a8040" stroke-width="1.8"/>
+              <line x1="12.4" y1="9"   x2="7.8"  y2="18.5" stroke="#9a8040" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="17.6" y1="9"   x2="22.2" y2="18.5" stroke="#9a8040" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="9.5"  y1="22"  x2="20.5" y2="22"   stroke="#9a8040" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Madge</div>
+            <div class="card-desc">視覺化模組相依圖，自動偵測循環依賴（circular dependencies）確保架構健康</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(154,128,64,0.1);--tag-col:var(--deps)">Dep Graph</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 3. Git Workflow ── -->
+    <div class="category">
+      <div class="cat-header">
+        <div class="cat-pip" style="background:var(--workflow)"></div>
+        <span class="cat-title">Git Workflow</span>
+        <div class="cat-rule"></div>
+      </div>
+      <div class="tools">
+
+        <div class="card" style="--accent:#b07070">
+          <div class="icon-box" style="--icon-bg:rgba(176,112,112,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <ellipse cx="15" cy="15" rx="10" ry="9" stroke="#b07070" stroke-width="1.8"/>
+              <ellipse cx="7"  cy="10" rx="3" ry="4.5" stroke="#b07070" stroke-width="1.5" transform="rotate(-20 7 10)"/>
+              <ellipse cx="23" cy="10" rx="3" ry="4.5" stroke="#b07070" stroke-width="1.5" transform="rotate(20 23 10)"/>
+              <circle cx="11.5" cy="13" r="1.2" fill="#b07070"/>
+              <circle cx="18.5" cy="13" r="1.2" fill="#b07070"/>
+              <path d="M12 18 Q15 21 18 18" stroke="#b07070" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Husky</div>
+            <div class="card-desc">Git hooks 自動化，在 commit / push 前自動觸發品質檢查閘道</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(176,112,112,0.1);--tag-col:#b07070">Git Hooks</span>
+        </div>
+
+        <div class="card" style="--accent:var(--docs)">
+          <div class="icon-box" style="--icon-bg:rgba(90,138,112,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <rect x="5" y="7" width="20" height="16" rx="3" stroke="#5a8a70" stroke-width="1.8"/>
+              <path d="M10 15 L13.5 18.5 L20 11.5" stroke="#5a8a70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">lint-staged</div>
+            <div class="card-desc">只對 git staged 的檔案執行 linter &amp; formatter，大幅提升 pre-commit 速度</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(90,138,112,0.1);--tag-col:var(--docs)">Pre-commit</span>
+        </div>
+
+        <div class="card" style="--accent:var(--workflow)">
+          <div class="icon-box" style="--icon-bg:rgba(122,90,144,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <rect x="3" y="6" width="24" height="18" rx="3" stroke="#7a5a90" stroke-width="1.8"/>
+              <path d="M8 12 L12 15 L8 18" stroke="#7a5a90" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="14" y1="18" x2="22" y2="18" stroke="#7a5a90" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="9"  cy="10" r="1" fill="#7a5a90"/>
+              <circle cx="13" cy="10" r="1" fill="#7a5a90"/>
+              <circle cx="17" cy="10" r="1" fill="#7a5a90"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Commitizen</div>
+            <div class="card-desc">互動式 Conventional Commit 問答流程，以 <code style="font-family:monospace">pnpm commit</code> 呼叫</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(122,90,144,0.1);--tag-col:var(--workflow)">Commits</span>
+        </div>
+
+        <div class="card" style="--accent:#7a70b0">
+          <div class="icon-box" style="--icon-bg:rgba(122,112,176,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <path d="M8 5 L22 5 L22 25 L8 25 Z" stroke="#7a70b0" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M11 11 L19 11 M11 15 L19 15 M11 19 L16 19" stroke="#7a70b0" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M5 8 Q5 5 8 5" stroke="#7a70b0" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M5 8 L5 22 Q5 25 8 25" stroke="#7a70b0" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Conventional Changelog</div>
+            <div class="card-desc">解析 Conventional Commits 記錄，在發版時自動產生 CHANGELOG.md</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(122,112,176,0.1);--tag-col:#7a70b0">Changelog</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 4. Documentation ── -->
+    <div class="category" style="grid-column: 1 / -1;">
+      <div class="cat-header">
+        <div class="cat-pip" style="background:var(--docs)"></div>
+        <span class="cat-title">Documentation</span>
+        <div class="cat-rule"></div>
+      </div>
+      <div class="tools" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+
+        <a class="card" href="https://viewsonic-edu.github.io/edu-npm-packages/?path=/docs/readme-mdx--docs" target="_blank" rel="noopener noreferrer" style="--accent:#b05070;text-decoration:none">
+          <div class="icon-box" style="--icon-bg:rgba(176,80,112,0.1)">
+            <img src="https://cdn.simpleicons.org/storybook/b05070" alt="Storybook" />
+          </div>
+          <div class="card-info">
+            <div class="card-name">Storybook</div>
+            <div class="card-desc">UI 元件隔離開發環境，對 design-system 的每個元件撰寫 Stories，部署至 GitHub Pages 作為互動式文件站台</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(176,80,112,0.1);--tag-col:#b05070">UI Docs ↗</span>
+        </a>
+
+        <div class="card" style="--accent:#4a70a8">
+          <div class="icon-box" style="--icon-bg:rgba(74,112,168,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <rect x="3" y="3" width="24" height="24" rx="4" fill="rgba(74,112,168,0.12)" stroke="#4a70a8" stroke-width="1.8"/>
+              <text x="15" y="20.5" text-anchor="middle" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#4a70a8">TS</text>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">TypeDoc</div>
+            <div class="card-desc">從 TypeScript 原始碼的 JSDoc 註解自動產生 API 文件，與 Storybook 整合在 apps/docs 站台</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(74,112,168,0.1);--tag-col:#4a70a8">API Docs</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 5. Package Registry ── -->
+    <div class="category" style="grid-column: 1 / -1;">
+      <div class="cat-header">
+        <div class="cat-pip" style="background:var(--registry)"></div>
+        <span class="cat-title">Package Registry</span>
+        <div class="cat-rule"></div>
+      </div>
+      <div class="tools" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+
+        <div class="card" style="--accent:var(--registry)">
+          <div class="icon-box" style="--icon-bg:rgba(158,110,98,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <!-- Cloud -->
+              <path d="M7 20 C4 20 3 17 5 15 C4 10 10 7 14 10 C15 7 22 7 22 12 C25 12 27 16 24 18 L7 20 Z"
+                stroke="#9e6e62" stroke-width="1.8" stroke-linejoin="round" fill="rgba(158,110,98,0.08)"/>
+              <!-- Package -->
+              <rect x="11" y="18" width="8" height="7" rx="1" stroke="#9e6e62" stroke-width="1.5"/>
+              <line x1="15" y1="18" x2="15" y2="25" stroke="#9e6e62" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="12" y1="21" x2="18" y2="21" stroke="#9e6e62" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">Azure Artifacts</div>
+            <div class="card-desc">Azure DevOps 托管的私有 npm registry（feed）。Nx monorepo 發布的 6 個套件（auth、design-system、hooks 等）均發布至此，各產品以 <code style="font-family:monospace">@mvb-fe</code> scope 安裝，無需對外公開即可跨產品共用，並受 Azure AD 身份驗證保護。</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(158,110,98,0.12);--tag-col:var(--registry)">Private Feed</span>
+        </div>
+
+        <div class="card" style="--accent:#5a70a0">
+          <div class="icon-box" style="--icon-bg:rgba(90,112,160,0.1)">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
+              <!-- pnpm-style 4-box icon -->
+              <rect x="4"  y="4"  width="9" height="9" rx="2" stroke="#5a70a0" stroke-width="1.6"/>
+              <rect x="17" y="4"  width="9" height="9" rx="2" stroke="#5a70a0" stroke-width="1.6"/>
+              <rect x="17" y="17" width="9" height="9" rx="2" stroke="#5a70a0" stroke-width="1.6"/>
+              <rect x="4"  y="17" width="9" height="9" rx="2" stroke="#5a70a0" stroke-width="1.6" opacity="0.35"/>
+              <line x1="13"   y1="8.5" x2="17"   y2="8.5" stroke="#5a70a0" stroke-width="1.6" stroke-linecap="round"/>
+              <line x1="21.5" y1="13"  x2="21.5" y2="17"  stroke="#5a70a0" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-name">pnpm workspace</div>
+            <div class="card-desc">Monorepo 套件管理器。透過 <code style="font-family:monospace">.npmrc</code> 設定 <code style="font-family:monospace">@mvb-fe:registry=&lt;Azure Artifacts feed URL&gt;</code>，本機開發與 CI pipeline 均使用相同設定，無縫安裝私有套件。</div>
+          </div>
+          <span class="tag" style="--tag-bg:rgba(90,112,160,0.1);--tag-col:#5a70a0">Workspace</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /grid-wrapper -->
+
+  <!-- ═══ LIFECYCLE FLOW ═══ -->
+  <div class="flow-section">
+    <div class="section-eyebrow">Development Lifecycle · Tool Integration Map</div>
+    <div class="flow">
+
+      <div class="phase">
+        <div class="phase-label">01 · Write</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#5a4a90"></div><span style="color:#5a4a90">ESLint</span></div>
+          <div class="phase-tool"><div class="dot" style="background:#a08040"></div><span style="color:#a08040">Prettier</span></div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">02 · Analyse</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#a06040"></div><span style="color:#a06040">Knip</span></div>
+          <div class="phase-tool"><div class="dot" style="background:#9a8040"></div><span style="color:#9a8040">Madge</span></div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">03 · Pre-commit</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#b07070"></div><span style="color:#b07070">Husky</span></div>
+          <div class="phase-tool"><div class="dot" style="background:#5a8a70"></div><span style="color:#5a8a70">lint-staged</span></div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">04 · Commit</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#7a5a90"></div><span style="color:#7a5a90">Commitizen</span></div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">05 · Build</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#5a8aa0"></div><span style="color:#5a8aa0">Nx</span></div>
+          <div class="phase-note">Affected tasks</div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">06 · Release</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#7a70b0"></div><span style="color:#7a70b0">Conv. Changelog</span></div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">07 · Publish</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#9e6e62"></div><span style="color:#9e6e62">Azure Artifacts</span></div>
+          <div class="phase-note">@mvb-fe scope</div>
+        </div>
+      </div>
+
+      <div class="arrow"><svg width="16" height="12" viewBox="0 0 18 14" fill="none"><path d="M0 7 L14 7 M10 3 L15 7 L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div class="phase">
+        <div class="phase-label">08 · Document</div>
+        <div class="phase-tools">
+          <div class="phase-tool"><div class="dot" style="background:#b05070"></div><span style="color:#b05070">Storybook</span></div>
+          <div class="phase-tool"><div class="dot" style="background:#4a70a8"></div><span style="color:#4a70a8">TypeDoc</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <span class="footer-left">@mvb-fe / edu-npm-packages &nbsp;·&nbsp; Nx Monorepo &nbsp;·&nbsp; pnpm workspace &nbsp;·&nbsp; Azure Artifacts</span>
+    <span class="footer-right">2026 · MyViewBoard Frontend</span>
+  </footer>
+
+</main>
+</body>
+</html>

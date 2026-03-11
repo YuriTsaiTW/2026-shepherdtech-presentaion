@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CI/CD Workflows · edu-npm-packages</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #FAFAF9;
+      --surface: #FFFFFF;
+      --border:  #E5E5E3;
+      --text:    #1A1A18;
+      --muted:   #737370;
+      --subtle:  #A8A8A5;
+
+      --tag-pr:       #1e40af;
+      --tag-pr-bg:    #DBEAFE;
+      --tag-release:  #166534;
+      --tag-release-bg: #DCFCE7;
+      --tag-pre:      #92400E;
+      --tag-pre-bg:   #FEF3C7;
+      --tag-sec:      #991B1B;
+      --tag-sec-bg:   #FEE2E2;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 28px;
+      margin-bottom: 56px;
+    }
+    .breadcrumb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .page-desc {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    /* ── SUMMARY TABLE ── */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 56px;
+      font-size: 14px;
+    }
+    .summary-table th {
+      text-align: left;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .summary-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      vertical-align: middle;
+    }
+    .summary-table code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      background: #F0F0EE;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.02em;
+    }
+    .tag-pr      { background: var(--tag-pr-bg);      color: var(--tag-pr); }
+    .tag-release { background: var(--tag-release-bg); color: var(--tag-release); }
+    .tag-pre     { background: var(--tag-pre-bg);     color: var(--tag-pre); }
+    .tag-sec     { background: var(--tag-sec-bg);     color: var(--tag-sec); }
+
+    /* ── WORKFLOW SECTION ── */
+    .workflow-section {
+      margin-bottom: 64px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section-trigger {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── DIAGRAM CARD ── */
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      overflow-x: auto;
+    }
+    .diagram-card .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── DIVIDER ── */
+    hr.section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 64px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <header class="page-header">
+      <div class="breadcrumb">edu-npm-packages · .github/workflows</div>
+      <h1 class="page-title">CI/CD Workflows</h1>
+      <p class="page-desc">4 個 GitHub Actions workflows 涵蓋完整的 CI/CD 生命週期，共用 <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F0F0EE;padding:2px 6px;border-radius:3px;">setup-pnpm</code> composite action 處理環境設定。</p>
+    </header>
+
+    <!-- Summary Table -->
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Trigger</th>
+          <th>Workflow</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>PR → <code>master</code></td>
+          <td><code>pr.yml</code> <span class="tag tag-pr">PR</span></td>
+          <td>Code quality checks + conditional SAST</td>
+        </tr>
+        <tr>
+          <td>Push to <code>master</code></td>
+          <td><code>release.yml</code> <span class="tag tag-release">Release</span></td>
+          <td>Build, publish to Azure Artifacts, deploy Storybook</td>
+        </tr>
+        <tr>
+          <td>Push to <code>pre-release/**</code></td>
+          <td><code>prerelease.yml</code> <span class="tag tag-pre">Pre-release</span></td>
+          <td>Build and publish pre-release packages</td>
+        </tr>
+        <tr>
+          <td>Weekly Monday 10:00 UTC+8 + manual</td>
+          <td><code>security-scan.yml</code> <span class="tag tag-sec">Security</span></td>
+          <td>Full SAST scan, GitHub Issue + Teams notification</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PR Quality Checks -->
+    <section class="workflow-section">
+      <div class="section-header">
+        <span class="tag tag-pr">PR</span>
+        <div>
+          <div class="section-title">PR Quality Checks &nbsp;<code style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:400">pr.yml</code></div>
+          <div class="section-trigger">Trigger: Pull request → master &nbsp;·&nbsp; Two parallel jobs</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#4a5568", "primaryTextColor": "#ffffff", "primaryBorderColor": "#2d3748", "lineColor": "#6b7280"}}}%%
+flowchart TD
+    A["Open or Update PR → master"] --> B["Job: quality ⚡ Always runs"]
+    A --> C["Job: sast 🔒 Conditional\ncontinue-on-error: true"]
+
+    B --> B1["checkout (fetch-depth: 0)"]
+    B1 --> B2["setup-pnpm action\nNode 22.12.0 + pnpm 9.15.1 + cache"]
+    B2 --> B3["Prettier check\n*.ts, *.tsx, *.json, *.css"]
+    B3 --> B4["Nx affected lint, test, build\nbase = PR base SHA"]
+
+    C --> C0{"PR title contains\n'[sast]'?"}
+    C0 -->|"No"| C_SKIP["⏭️ Job skipped"]
+    C0 -->|"Yes"| C1["checkout"]
+    C1 --> C2["Download ShiftLeft CLI\ncurl cdn.shiftleft.io/download/sl"]
+    C2 --> C2J["Set up Java\ntemurin 11"]
+    C2J --> C3["Run SAST analysis\n--app edu-npm-packages --js --cpg\n--exclude scripts,apps/docs/scripts,tools"]
+    C3 --> C4["Generate security report\n/tmp/pr-security-report.md"]
+    C4 --> C5["Post report to PR\ngh api repos/:repo/issues/:number/comments\n(GH_TOKEN)"]
+
+    style A fill:#2563eb,stroke:#1d4ed8,color:#ffffff
+    style B fill:#10b981,stroke:#059669,color:#ffffff
+    style B1 fill:#10b981,stroke:#059669,color:#ffffff
+    style B2 fill:#10b981,stroke:#059669,color:#ffffff
+    style B3 fill:#10b981,stroke:#059669,color:#ffffff
+    style B4 fill:#10b981,stroke:#059669,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C0 fill:#eab308,stroke:#ca8a04,color:#000000
+    style C_SKIP fill:#6b7280,stroke:#4b5563,color:#ffffff
+    style C1 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C2 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C2J fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C3 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C4 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style C5 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Release Workflow -->
+    <section class="workflow-section">
+      <div class="section-header">
+        <span class="tag tag-release">Release</span>
+        <div>
+          <div class="section-title">Release Workflow &nbsp;<code style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:400">release.yml</code></div>
+          <div class="section-trigger">Trigger: Push to master &nbsp;·&nbsp; validate-commit → build-publish → (tag + notify + storybook) in parallel</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#4a5568", "primaryTextColor": "#ffffff", "primaryBorderColor": "#2d3748", "lineColor": "#6b7280"}}}%%
+flowchart TD
+    A["Push to master branch"] --> B["Job: validate-commit 🔍"]
+
+    B --> B1["checkout (fetch-depth: 0)"]
+    B1 --> B2["check-commit-title.sh\nrefs/heads/master + git log -n 1"]
+    B2 --> B3{{"should_publish?\nPUBLISH_PACKAGE\nPUBLISH_VERSION"}}
+
+    B3 -->|"false"| SKIP["⏭️ Pipeline ends\nNot a release commit"]
+    B3 -->|"true"| C["Job: build-publish 🚀"]
+
+    C --> C1["checkout + setup-pnpm\n(AZURE_NPM_TOKEN)"]
+    C1 --> C2["pnpm nx run package:build"]
+    C2 --> C3["pnpm nx release publish --projects\n→ Azure Artifacts"]
+
+    C3 -->|"Success"| D["Job: tag-release 🏷️\n(parallel)"]
+    C3 -->|"Success"| E["Job: teams-notification 💬\n(parallel)"]
+    C3 -->|"Success"| F["Job: storybook-deploy 📚\n(parallel)"]
+    C3 -->|"Failure"| FAIL["❌ Stop"]
+
+    D --> D1["checkout (fetch-depth: 0)\npermissions: contents: write"]
+    D1 --> D2["git config github-actions[bot]"]
+    D2 --> D3["git tag @mvb-fe/PACKAGE/vVERSION HEAD"]
+    D3 --> D4["git push origin TAG_NAME"]
+
+    E --> E1["checkout + setup-pnpm"]
+    E1 --> E2["nx graph --file=/tmp/graph.json\n(warm Nx cache)"]
+    E2 --> E3["scripts/publish/teams.mjs\nPACKAGE TEAMS_WEBHOOK_PUBLISH\n→ Teams Channel"]
+
+    F --> F1["checkout + setup-pnpm"]
+    F1 --> F2["docs:generate-typedoc-mdx"]
+    F2 --> F3["docs:build-storybook"]
+    F3 --> F4["actions/configure-pages@v4"]
+    F4 --> F5["actions/upload-pages-artifact@v3\ndist/storybook/docs/"]
+    F5 --> F6["actions/deploy-pages@v4\n→ GitHub Pages"]
+
+    style A fill:#16a34a,stroke:#15803d,color:#ffffff
+    style B fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B1 fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B2 fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B3 fill:#eab308,stroke:#ca8a04,color:#000000
+    style SKIP fill:#6b7280,stroke:#4b5563,color:#ffffff
+    style C fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C1 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C2 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C3 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style D fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D1 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D2 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D3 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D4 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style E fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E1 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E2 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E3 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style F fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F1 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F2 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F3 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F4 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F5 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style F6 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style FAIL fill:#dc2626,stroke:#b91c1c,color:#ffffff
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Pre-release Workflow -->
+    <section class="workflow-section">
+      <div class="section-header">
+        <span class="tag tag-pre">Pre-release</span>
+        <div>
+          <div class="section-title">Pre-release Workflow &nbsp;<code style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:400">prerelease.yml</code></div>
+          <div class="section-trigger">Trigger: Push to pre-release/** &nbsp;·&nbsp; 與 Release 相同架構，不含 Storybook 部署</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#4a5568", "primaryTextColor": "#ffffff", "primaryBorderColor": "#2d3748", "lineColor": "#6b7280"}}}%%
+flowchart TD
+    A["Push to pre-release/** branch"] --> B["Job: validate-commit 🔍"]
+
+    B --> B1["checkout (fetch-depth: 0)"]
+    B1 --> B2["check-commit-title.sh\n$GITHUB_REF + git log -n 1"]
+    B2 --> B3{{"should_publish?\nPUBLISH_PACKAGE\nPUBLISH_VERSION"}}
+
+    B3 -->|"false"| SKIP["⏭️ Pipeline ends\nNot a pre-release commit\nor wrong branch/version combo"]
+    B3 -->|"true"| C["Job: build-publish 🚀"]
+
+    C --> C1["checkout + setup-pnpm\n(AZURE_NPM_TOKEN)"]
+    C1 --> C2["pnpm nx run package:build"]
+    C2 --> C3["pnpm nx release publish --projects\n→ Azure Artifacts (pre-release tag)"]
+
+    C3 -->|"Success"| D["Job: tag-release 🏷️\n(parallel)"]
+    C3 -->|"Success"| E["Job: teams-notification 💬\n(parallel)"]
+    C3 -->|"Failure"| FAIL["❌ Stop"]
+
+    D --> D1["checkout (fetch-depth: 0)\npermissions: contents: write"]
+    D1 --> D2["git config github-actions[bot]"]
+    D2 --> D3["git tag @mvb-fe/PACKAGE/vVERSION HEAD"]
+    D3 --> D4["git push origin TAG_NAME"]
+
+    E --> E1["checkout + setup-pnpm"]
+    E1 --> E2["nx graph --file=/tmp/graph.json\n(warm Nx cache)"]
+    E2 --> E3["scripts/publish/teams.mjs\nPACKAGE TEAMS_WEBHOOK_PUBLISH\n→ Teams Channel"]
+
+    style A fill:#eab308,stroke:#ca8a04,color:#000000
+    style B fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B1 fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B2 fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style B3 fill:#eab308,stroke:#ca8a04,color:#000000
+    style SKIP fill:#6b7280,stroke:#4b5563,color:#ffffff
+    style C fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C1 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C2 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style C3 fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+    style D fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D1 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D2 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D3 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style D4 fill:#f97316,stroke:#ea580c,color:#ffffff
+    style E fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E1 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E2 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style E3 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+    style FAIL fill:#dc2626,stroke:#b91c1c,color:#ffffff
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Scheduled Security Scan -->
+    <section class="workflow-section">
+      <div class="section-header">
+        <span class="tag tag-sec">Security</span>
+        <div>
+          <div class="section-title">Scheduled Security Scan &nbsp;<code style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:400">security-scan.yml</code></div>
+          <div class="section-trigger">Trigger: Weekly Monday 10:00 AM UTC+8 (cron: '0 2 * * 1') + workflow_dispatch</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#4a5568", "primaryTextColor": "#ffffff", "primaryBorderColor": "#2d3748", "lineColor": "#6b7280"}}}%%
+flowchart TD
+    A["Weekly: Monday 10:00 AM UTC+8\nor workflow_dispatch"] --> B["Job: sast-scan 🔒"]
+
+    B --> B1["checkout"]
+    B1 --> B2["Download ShiftLeft CLI\ncurl cdn.shiftleft.io/download/sl"]
+    B2 --> B2J["Set up Java\ntemurin 11"]
+    B2J --> B3["Extract branch name\n$GITHUB_REF → branch output"]
+    B3 --> B4["Run SAST analysis\n--app edu-npm-packages --tag branch=BRANCH\n--exclude scripts,apps/docs/scripts,tools"]
+    B4 --> B5["Generate report\n/tmp/monthly-security-report.md"]
+    B5 --> B6["Upload artifact\nname: SecurityReport"]
+
+    B6 --> C["Job: notify 📣"]
+
+    C --> C1["checkout + download artifact\nSecurityReport → /tmp"]
+    C1 --> C2["setup-pnpm\n(AZURE_NPM_TOKEN)"]
+    C2 --> C3["Analyze report, create issue if needed,\nand send Teams notification"]
+
+    C3 --> C4{"Critical count > 0?"}
+    C4 -->|"No"| C5["✅ No critical issues\nSkip issue creation"]
+    C4 -->|"Yes"| C6["gh issue create\n--label security\n→ GitHub Issue"]
+
+    C5 --> C7[".github/scripts/teams.mjs\nWEBHOOK CRITICAL_COUNT ISSUE_NUMBER\n→ Teams Channel (TEAMS_WEBHOOK_SECURITY)"]
+    C6 --> C7
+
+    style A fill:#f59e0b,stroke:#d97706,color:#000000
+    style B fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B1 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B2 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B2J fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B3 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B4 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B5 fill:#dc2626,stroke:#b91c1c,color:#ffffff
+    style B6 fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+    style C fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style C1 fill:#06b6d4,stroke:#0891b2,color:#ffffff
+    style C2 fill:#10b981,stroke:#059669,color:#ffffff
+    style C3 fill:#f59e0b,stroke:#d97706,color:#000000
+    style C4 fill:#eab308,stroke:#ca8a04,color:#000000
+    style C5 fill:#6b7280,stroke:#4b5563,color:#ffffff
+    style C6 fill:#ef4444,stroke:#dc2626,color:#ffffff
+    style C7 fill:#0ea5e9,stroke:#0284c7,color:#ffffff
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- setup-pnpm Composite Action -->
+    <section class="workflow-section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Shared: setup-pnpm Composite Action</div>
+          <div class="section-trigger">.github/actions/setup-pnpm/ &nbsp;·&nbsp; 所有 workflow 共用的環境設定</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#4a5568", "primaryTextColor": "#ffffff", "primaryBorderColor": "#2d3748", "lineColor": "#6b7280"}}}%%
+flowchart LR
+    A["Job sets\nAZURE_NPM_TOKEN env"] --> B["actions/setup-node@v4\nNode 22.12.0"]
+    B --> C["pnpm/action-setup@v4\npnpm 9.15.1"]
+    C --> D["Get pnpm store path"]
+    D --> E["actions/cache@v4\n~/.pnpm-store\nkey: pnpm-OS-hash(pnpm-lock.yaml)"]
+    E --> F["pnpm i --frozen-lockfile\n(reads .npmrc → Azure Artifacts)"]
+
+    style A fill:#4a5568,stroke:#2d3748,color:#ffffff
+    style B fill:#10b981,stroke:#059669,color:#ffffff
+    style C fill:#10b981,stroke:#059669,color:#ffffff
+    style D fill:#10b981,stroke:#059669,color:#ffffff
+    style E fill:#10b981,stroke:#059669,color:#ffffff
+    style F fill:#16a34a,stroke:#15803d,color:#ffffff
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+  </script>
+</body>
+</html>
