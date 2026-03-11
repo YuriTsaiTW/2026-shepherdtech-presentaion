@@ -311,7 +311,7 @@ const slideBox = (children: React.ReactNode) => (
     right={0}
     bottom={0}
     padding="20px 52px 48px"
-    style={{ overflowY: "hidden", boxSizing: "border-box" }}
+    style={{ overflowY: "auto", boxSizing: "border-box" }}
   >
     {children}
   </Box>
@@ -658,13 +658,14 @@ function App() {
             <Grid
               gridTemplateColumns="1fr 1fr"
               gridGap="12px"
-              style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}
+              style={{ flex: 1, minHeight: 0, overflow: "auto", alignItems: "stretch" }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -681,7 +682,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -694,6 +695,7 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -710,7 +712,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -743,7 +745,7 @@ function App() {
                 flex: 1,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -771,13 +773,14 @@ function App() {
             <Grid
               gridTemplateColumns="1fr 1fr"
               gridGap="12px"
-              style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}
+              style={{ flex: 1, minHeight: 0, overflow: "auto", alignItems: "stretch" }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -794,7 +797,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -807,6 +810,7 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -823,7 +827,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -864,13 +868,14 @@ function App() {
             <Grid
               gridTemplateColumns="1fr 1fr"
               gridGap="12px"
-              style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}
+              style={{ flex: 1, minHeight: 0, overflow: "auto", alignItems: "stretch" }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -887,7 +892,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -900,6 +905,7 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -916,7 +922,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -951,13 +957,14 @@ function App() {
             <Grid
               gridTemplateColumns="1fr 1fr"
               gridGap="12px"
-              style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}
+              style={{ flex: 1, minHeight: 0, overflow: "auto", alignItems: "stretch" }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -974,7 +981,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -987,6 +994,7 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -1003,7 +1011,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -1038,13 +1046,14 @@ function App() {
             <Grid
               gridTemplateColumns="1fr 1fr"
               gridGap="12px"
-              style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}
+              style={{ flex: 1, minHeight: 0, overflow: "auto", alignItems: "stretch" }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -1061,7 +1070,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -1074,6 +1083,7 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   height: "100%",
+                  minHeight: 0,
                 }}
               >
                 <Text
@@ -1090,7 +1100,7 @@ function App() {
                     flex: 1,
                     background: "#1e1e1e",
                     borderRadius: "6px",
-                    overflow: "hidden",
+                    overflow: "auto",
                   }}
                 >
                   <CodePane language="typescript" showLineNumbers={false}>
@@ -1125,7 +1135,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -1160,7 +1170,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -1194,7 +1204,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -1226,7 +1236,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -1259,7 +1269,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
@@ -1309,7 +1319,7 @@ function App() {
                 zoom: 0.88,
                 background: "#1e1e1e",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflow: "auto",
               }}
             >
               <CodePane language="typescript" showLineNumbers={false}>
