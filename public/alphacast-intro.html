@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>alphacast-frontend · 架構設計</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f4ede6;
+      --surface:  #ece3d8;
+      --card:     #ece3d8;
+      --card-hov: #e2d5c5;
+      --border:   rgba(90, 60, 40, 0.14);
+      --text:     #2a2018;
+      --muted:    #7a6050;
+      --subtle:   #c0a898;
+
+      --violet:   #7a5aa0;
+      --teal:     #4a8878;
+      --blue:     #4a6ea8;
+      --amber:    #9a6820;
+      --sage:     #5a8a60;
+      --rose:     #9e6062;
+
+      --violet-bg: rgba(122, 90, 160, 0.1);
+      --teal-bg:   rgba(74, 136, 120, 0.1);
+      --blue-bg:   rgba(74, 110, 168, 0.1);
+      --amber-bg:  rgba(154, 104, 32, 0.09);
+      --sage-bg:   rgba(90, 138, 96, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    main { max-width: 1360px; margin: 0 auto; }
+
+    /* ══ HERO ══ */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 48px;
+      padding: 60px 64px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 5px 14px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 4.5vw, 58px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--violet);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 480px;
+    }
+
+    .hero-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .hero-badge img {
+      max-height: 80px;
+      max-width: 200px;
+      object-fit: contain;
+    }
+    .hero-badge-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--violet);
+      text-align: center;
+    }
+
+    /* ══ STATS BAR ══ */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      padding: 20px 32px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 28px; font-weight: 700; }
+    .stat-lbl {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ══ SECTION ══ */
+    .section {
+      padding: 48px 64px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-eyebrow {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    /* ══ TWO / THREE COL ══ */
+    .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    /* ══ INFO CARD ══ */
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+    }
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .info-card-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .info-card-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .info-card-rule { flex: 1; height: 1px; background: var(--border); }
+    .info-card-body {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .info-card-body strong { color: var(--text); }
+
+    /* ══ CODE BLOCK ══ */
+    .code-block {
+      background: #1e1e1e;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #d4c5b0;
+      white-space: pre;
+    }
+    .code-block .k  { color: #c792ea; } /* keyword */
+    .code-block .s  { color: #c3e88d; } /* string */
+    .code-block .c  { color: #546e7a; } /* comment */
+    .code-block .n  { color: #82aaff; } /* name/type */
+    .code-block .p  { color: #89ddff; } /* punct */
+    .code-block .v  { color: #f78c6c; } /* value */
+
+    /* ══ TABLE ══ */
+    .data-table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 9px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(90, 60, 40, 0.04); }
+
+    .td-name { font-weight: 600; color: var(--text); }
+    .td-code {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--violet);
+      background: var(--violet-bg);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .td-muted { color: var(--muted); }
+
+    /* ══ TOOL TAG ══ */
+    .tag {
+      display: inline-block;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    /* ══ TECH CARD ══ */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .tech-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      border-left: 3px solid var(--card-accent, var(--border));
+    }
+    .tech-icon {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .tech-info { min-width: 0; }
+    .tech-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .tech-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+    /* ══ CONTEXT TABLE ══ */
+    .ctx-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .ctx-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      border-top: 3px solid var(--violet);
+    }
+    .ctx-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--violet);
+      margin-bottom: 6px;
+    }
+    .ctx-role { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ══ FLOW ══ */
+    .flow-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      padding-top: 4px;
+    }
+    .flow-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .flow-line {
+      width: 1px; flex: 1;
+      min-height: 16px;
+      background: var(--border);
+      margin: 3px 0;
+    }
+    .flow-content { flex: 1; padding-bottom: 14px; }
+    .flow-step:last-child .flow-line { display: none; }
+    .flow-step:last-child .flow-content { padding-bottom: 0; }
+    .flow-label {
+      font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px;
+    }
+    .flow-note {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px; color: var(--muted);
+    }
+    .flow-indent {
+      margin-left: 28px;
+      padding: 8px 12px;
+      border-left: 2px solid var(--border);
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ══ TOOLCHAIN GRID ══ */
+    .toolchain-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .toolchain-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tc-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .tc-value { font-size: 13px; font-weight: 600; color: var(--text); }
+    .tc-detail { font-size: 11px; color: var(--muted); }
+
+    /* ══ QUOTE ══ */
+    .quote-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--violet);
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin-top: 0;
+    }
+    .quote-text {
+      font-size: 16px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+    .quote-text strong { font-style: normal; color: var(--violet); }
+    .quote-attribution {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ══ INTENT TABLE ══ */
+    .intent-tag {
+      display: inline-block;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--violet-bg);
+      color: var(--violet);
+    }
+
+    /* ══ LINKS BAR ══ */
+    .links-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 64px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .links-bar-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--subtle);
+      letter-spacing: 0.08em;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+    .link-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .link-chip:hover { background: var(--card-hov); color: var(--text); }
+    .link-chip-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ══ FOOTER ══ */
+    footer {
+      padding: 24px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+    .footer-left, .footer-right {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer-right { color: var(--subtle); }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero">
+    <div>
+      <div class="hero-eyebrow">alphacast-frontend &nbsp;·&nbsp; ALPHACamp 學生畢業專案 &nbsp;·&nbsp; Topic 03</div>
+      <h1>架構設計<br /><em>代碼風格與技術選型</em></h1>
+      <p class="hero-sub">
+        從零設計的學生畢業專案，讓學生在接近業界的環境中完整走過
+        TypeScript、TanStack Query、MSW、Storybook 等現代前端工具鏈。
+      </p>
+    </div>
+    <div class="hero-badge">
+      <img src="alphacast-logo.png" alt="alphacast logo" />
+      <span class="hero-badge-label">Capstone Project</span>
+    </div>
+  </header>
+
+  <!-- ═══ STATS BAR ═══ -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-val" style="color:var(--blue)">5</span>
+      <span class="stat-lbl">React Contexts</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--sage)">3</span>
+      <span class="stat-lbl">Test Layers</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--teal)">2</span>
+      <span class="stat-lbl">Axios Instances</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--violet)">strict</span>
+      <span class="stat-lbl">TypeScript Mode</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--amber)">0</span>
+      <span class="stat-lbl">ESLint Warnings</span>
+    </div>
+  </div>
+
+  <!-- ═══ LINKS BAR ═══ -->
+  <div class="links-bar">
+    <span class="links-bar-label">Links ·</span>
+    <a class="link-chip" href="https://github.com/showwell0120/alphacast-frontend" target="_blank" rel="noopener noreferrer">
+      <div class="link-chip-dot" style="background:var(--teal)"></div>
+      範例作品 · showwell0120/alphacast-frontend ↗
+    </a>
+    <a class="link-chip" href="https://github.com/YuriTsaiTW/capstone-alphacast-starter" target="_blank" rel="noopener noreferrer">
+      <div class="link-chip-dot" style="background:var(--violet)"></div>
+      起始專案 · YuriTsaiTW/capstone-alphacast-starter ↗
+    </a>
+    <a class="link-chip" href="https://docs.google.com/presentation/d/1mWaUIUu7l4wkAfv4DvbWhe-FIi4NbDMoQumGsWTvVww/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+      <div class="link-chip-dot" style="background:var(--amber)"></div>
+      專案介紹簡報 · Google Slides ↗
+    </a>
+  </div>
+
+  <!-- ═══ SECTION 1: CODE QUALITY ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">01 · 代碼風格與品質 — Code Style &amp; Quality</div>
+
+    <div class="two-col" style="margin-bottom:28px">
+      <!-- TypeScript -->
+      <div>
+        <div class="section-title" style="font-size:16px">TypeScript — 嚴格模式</div>
+        <div class="code-block">
+          <pre><span class="c">// tsconfig.json</span>
+{
+  <span class="s">"strict"</span>: <span class="k">true</span>,
+  <span class="s">"noUnusedLocals"</span>: <span class="k">true</span>,
+  <span class="s">"noUnusedParameters"</span>: <span class="k">true</span>,
+  <span class="s">"noFallthroughCasesInSwitch"</span>: <span class="k">true</span>
+}</pre>
+        </div>
+        <div class="info-card" style="margin-top:12px">
+          <div class="info-card-body">
+            <strong>不容許 <code style="font-family:'Fira Code',monospace;font-size:11px">any</code></strong>：所有 API 回傳值都有對應型別定義
+            （<code style="font-family:'Fira Code',monospace;font-size:11px">spotify.d.ts</code>、<code style="font-family:'Fira Code',monospace;font-size:11px">server.d.ts</code>、<code style="font-family:'Fira Code',monospace;font-size:11px">app.d.ts</code>）。
+            Spotify 型別統一放在 <code style="font-family:'Fira Code',monospace;font-size:11px">Spotify</code> 命名空間下，
+            避免名稱衝突。
+          </div>
+        </div>
+      </div>
+
+      <!-- ESLint + Prettier -->
+      <div>
+        <div class="section-title" style="font-size:16px">ESLint + Prettier — 零警告政策</div>
+        <div class="code-block">
+          <pre><span class="c"># package.json — lint script</span>
+<span class="s">"lint"</span>: <span class="s">"eslint . --ext ts,tsx --max-warnings 0"</span></pre>
+        </div>
+        <div class="info-card" style="margin-top:12px">
+          <div class="info-card-body" style="display:flex;flex-direction:column;gap:6px">
+            <div><strong>ESLint extends：</strong> <code style="font-family:'Fira Code',monospace;font-size:11px">recommended</code>、<code style="font-family:'Fira Code',monospace;font-size:11px">@typescript-eslint</code>、<code style="font-family:'Fira Code',monospace;font-size:11px">react-hooks</code>、<code style="font-family:'Fira Code',monospace;font-size:11px">storybook</code></div>
+            <div><strong>Import 自動排序</strong>：<code style="font-family:'Fira Code',monospace;font-size:11px">@trivago/prettier-plugin-sort-imports</code> — 外部套件 → 應用模組 → 相對路徑</div>
+            <div><strong>零警告策略</strong>：CI 只要有警告就失敗，不讓技術債積累。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Naming Conventions Table -->
+    <div class="section-title" style="font-size:16px">命名慣例</div>
+    <div class="data-table-wrap" style="margin-bottom:28px">
+      <table>
+        <thead>
+          <tr><th>類別</th><th>慣例</th><th>範例</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="td-name">檔案 / 目錄</span></td>
+            <td><span class="tag" style="background:var(--amber-bg);color:var(--amber)">kebab-case</span></td>
+            <td><code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted)">show-card/&nbsp;&nbsp;auth-pkce.ts</code></td>
+          </tr>
+          <tr>
+            <td><span class="td-name">元件</span></td>
+            <td><span class="tag" style="background:var(--blue-bg);color:var(--blue)">PascalCase</span></td>
+            <td><code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted)">ShowCard&nbsp;&nbsp;FavoriteButton</code></td>
+          </tr>
+          <tr>
+            <td><span class="td-name">Hook</span></td>
+            <td><span class="tag" style="background:var(--violet-bg);color:var(--violet)">useXxx camelCase</span></td>
+            <td><code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted)">useUserContext&nbsp;&nbsp;useCategoryContext</code></td>
+          </tr>
+          <tr>
+            <td><span class="td-name">型別 / 介面</span></td>
+            <td><span class="tag" style="background:var(--blue-bg);color:var(--blue)">PascalCase</span></td>
+            <td><code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted)">ShowCardProps&nbsp;&nbsp;EpisodeItem</code></td>
+          </tr>
+          <tr>
+            <td><span class="td-name">變數 / 函數</span></td>
+            <td><span class="tag" style="background:rgba(90,60,40,0.06);color:var(--muted)">camelCase</span></td>
+            <td><code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted)">currentCategoryId&nbsp;&nbsp;syncCategories</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Component Architecture + Git Workflow -->
+    <div class="two-col">
+      <!-- Component Structure -->
+      <div>
+        <div class="section-title" style="font-size:16px">元件架構原則</div>
+        <div class="info-card" style="margin-bottom:12px">
+          <div class="info-card-body">
+            <strong>目錄即元件原則</strong>：每個元件一個目錄，包含 <code style="font-family:'Fira Code',monospace;font-size:11px">index.tsx</code> + <code style="font-family:'Fira Code',monospace;font-size:11px">styles.module.scss</code>
+          </div>
+        </div>
+        <div class="code-block">
+          <pre><span class="n">src/components/show-card/</span>
+├── <span class="s">index.tsx</span>
+└── <span class="s">styles.module.scss</span></pre>
+        </div>
+        <div class="code-block">
+          <pre><span class="c">// 固定結構：型別定義 → 元件本體 → 預設匯出</span>
+<span class="k">export interface</span> <span class="n">ShowCardProps</span> {
+  show: <span class="n">Spotify.Show</span>;
+  categoryId: <span class="k">string</span>;
+}
+
+<span class="k">export function</span> <span class="n">ShowCard</span>({ show, categoryId }: <span class="n">ShowCardProps</span>) {
+  <span class="c">// logic</span>
+}
+
+<span class="k">export default</span> ShowCard;</pre>
+        </div>
+        <div class="info-card" style="margin-top:12px">
+          <div class="info-card-body">
+            <strong>Context + Custom Hook 模式</strong>（取代 Redux 樣板）：
+            每個 Context 對應一個 Provider，統一在 <code style="font-family:'Fira Code',monospace;font-size:11px">src/contexts/index.ts</code> 匯出，App.tsx 只需一次性套用。
+          </div>
+        </div>
+      </div>
+
+      <!-- Git Workflow -->
+      <div>
+        <div class="section-title" style="font-size:16px">Git Workflow — 三層防線</div>
+        <div class="flow-box">
+          <div class="flow-step">
+            <div class="flow-connector">
+              <div class="flow-dot" style="background:var(--amber)"></div>
+              <div class="flow-line"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-label">git commit</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-connector">
+              <div class="flow-dot" style="background:var(--sage)"></div>
+              <div class="flow-line"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-label">husky pre-commit → lint-staged</div>
+              <div class="flow-indent">*.{ts,tsx} → eslint + prettier + jest<br/>*.{css,scss,json,md} → prettier</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-connector">
+              <div class="flow-dot" style="background:var(--violet)"></div>
+            </div>
+            <div class="flow-content">
+              <div class="flow-label">commitlint commit-msg hook</div>
+              <div class="flow-note">Conventional Commits 格式驗證</div>
+            </div>
+          </div>
+        </div>
+        <div class="code-block" style="margin-top:14px">
+          <pre><span class="s">feat</span>: 新增搜尋節目功能
+<span class="s">fix</span>:  修正 OAuth callback 重複呼叫問題
+<span class="s">test</span>: 補充 getGreeting helper 測試
+<span class="s">chore</span>: 升級 @tanstack/react-query 至 v4</pre>
+        </div>
+        <div class="info-card" style="margin-top:12px">
+          <div class="info-card-body">
+            <strong>設計意圖</strong>：讓學生從第一個 commit 開始養成業界標準習慣，而非事後補救。
+          </div>
+        </div>
+
+        <!-- Testing -->
+        <div class="section-title" style="font-size:16px;margin-top:22px">測試策略 — 三個層面</div>
+        <div class="code-block">
+          <pre><span class="n">src/</span>
+├─ <span class="s">apis/__tests__/</span>
+│   ├─ <span class="n">spotify.test.ts</span>     <span class="c"># Axios 單元測試（mock axios）</span>
+│   └─ <span class="n">server.test.ts</span>      <span class="c"># Server API 函數測試</span>
+└─ <span class="s">helpers/__tests__/</span>
+    ├─ <span class="n">transformDuration.test.ts</span>
+    ├─ <span class="n">categoryName.test.ts</span>
+    └─ <span class="n">getGreeting.test.ts</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION 2: TECH STACK ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">02 · 技術選型 — Tech Stack Decisions</div>
+
+    <!-- Core -->
+    <div class="section-title" style="font-size:16px;margin-bottom:14px">核心框架</div>
+    <div class="tech-grid" style="margin-bottom:28px">
+      <div class="tech-card" style="--card-accent:var(--blue)">
+        <div class="tech-icon" style="background:var(--blue-bg);color:var(--blue)">R18</div>
+        <div class="tech-info">
+          <div class="tech-name">React 18 + TypeScript 5</div>
+          <div class="tech-desc">業界主流，學完可直接銜接職場。強型別讓 API 串接錯誤在編譯期浮現，而非 runtime 才炸。</div>
+        </div>
+        <span class="tag" style="background:var(--blue-bg);color:var(--blue)">Core</span>
+      </div>
+      <div class="tech-card" style="--card-accent:var(--amber)">
+        <div class="tech-icon" style="background:var(--amber-bg);color:var(--amber)">Vite</div>
+        <div class="tech-info">
+          <div class="tech-name">Vite 4</div>
+          <div class="tech-desc">HMR 極快，學習體驗好；native ESM，不需複雜 webpack 配置，降低環境建置門檻。</div>
+        </div>
+        <span class="tag" style="background:var(--amber-bg);color:var(--amber)">Build</span>
+      </div>
+    </div>
+
+    <!-- TanStack Query + Context -->
+    <div class="section-title" style="font-size:16px;margin-bottom:14px">狀態管理策略</div>
+    <div class="two-col" style="margin-bottom:28px">
+      <!-- TanStack Query -->
+      <div class="info-card" style="border-left:3px solid var(--teal)">
+        <div class="info-card-header">
+          <div class="info-card-pip" style="background:var(--teal)"></div>
+          <span class="info-card-title" style="color:var(--teal)">TanStack Query v4 — 伺服器狀態</span>
+          <div class="info-card-rule"></div>
+        </div>
+        <div class="info-card-body" style="margin-bottom:10px">
+          「伺服器狀態」和「UI 狀態」是完全不同的問題。<br/>
+          快取、背景重新驗證、競態條件、loading/error — 這些 Redux 做起來需要大量樣板，TanStack Query 開箱即用。
+        </div>
+        <div class="code-block">
+          <pre><span class="c">// useQuery 自動處理快取 + loading + error</span>
+<span class="k">const</span> { data: shows, isLoading } = <span class="n">useQuery</span>(
+  [<span class="s">'getShows'</span>, categoryId],
+  () => getShows({ ids: showIds, country: <span class="s">'TW'</span> })
+);
+
+<span class="c">// useMutation 自動處理寫入 + 樂觀更新</span>
+<span class="k">const</span> { mutate } = <span class="n">useMutation</span>(addFavoriteApi, {
+  onSuccess: () => queryClient.<span class="n">invalidateQueries</span>([<span class="s">'favorites'</span>]),
+});</pre>
+        </div>
+      </div>
+
+      <!-- Context API -->
+      <div>
+        <div class="info-card" style="border-left:3px solid var(--violet);margin-bottom:12px">
+          <div class="info-card-header">
+            <div class="info-card-pip" style="background:var(--violet)"></div>
+            <span class="info-card-title" style="color:var(--violet)">React Context API — UI 狀態</span>
+            <div class="info-card-rule"></div>
+          </div>
+          <div class="info-card-body">
+            專案規模不需要跨多層元件的複雜狀態流，搭配 TanStack Query 處理伺服器狀態後，剩下的 UI 狀態用 Context 管理已非常清晰，且學習曲線低。
+          </div>
+        </div>
+        <div class="ctx-grid">
+          <div class="ctx-card">
+            <div class="ctx-name">UserContext</div>
+            <div class="ctx-role">使用者身份、Spotify Token</div>
+          </div>
+          <div class="ctx-card">
+            <div class="ctx-name">CategoryContext</div>
+            <div class="ctx-role">分類選單、當前選中分類</div>
+          </div>
+          <div class="ctx-card">
+            <div class="ctx-name">FavoriteContext</div>
+            <div class="ctx-role">收藏的 episode ID 清單</div>
+          </div>
+          <div class="ctx-card">
+            <div class="ctx-name">PlayerContext</div>
+            <div class="ctx-role">播放器狀態、嵌入式控制器</div>
+          </div>
+          <div class="ctx-card">
+            <div class="ctx-name">ModalContext</div>
+            <div class="ctx-role">Modal 開關與 props 傳遞</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Axios + OAuth + MSW -->
+    <div class="section-title" style="font-size:16px;margin-bottom:14px">API 與安全設計</div>
+    <div class="tech-grid" style="margin-bottom:28px">
+      <div class="tech-card" style="--card-accent:var(--sage)">
+        <div class="tech-icon" style="background:var(--sage-bg);color:var(--sage)">Axios</div>
+        <div class="tech-info">
+          <div class="tech-name">Axios — 雙實例設計</div>
+          <div class="tech-desc">
+            兩個 API（自訂後端 / Spotify）使用不同 token 和 base URL，分開的 axios 實例讓 auth header 管理互不干擾，
+            讓學生理解攔截器的實際應用場景。
+          </div>
+        </div>
+        <span class="tag" style="background:var(--sage-bg);color:var(--sage)">HTTP</span>
+      </div>
+      <div class="tech-card" style="--card-accent:var(--amber)">
+        <div class="tech-icon" style="background:var(--amber-bg);color:var(--amber)">PKCE</div>
+        <div class="tech-info">
+          <div class="tech-name">Spotify PKCE OAuth</div>
+          <div class="tech-desc">
+            SPA 無法安全保存 client secret，PKCE 透過動態產生的 code_verifier / code_challenge 替代 secret。
+            Spotify 對 SPA 的官方推薦認證方式。
+          </div>
+        </div>
+        <span class="tag" style="background:var(--amber-bg);color:var(--amber)">OAuth</span>
+      </div>
+      <div class="tech-card" style="--card-accent:var(--teal)">
+        <div class="tech-icon" style="background:var(--teal-bg);color:var(--teal)">MSW</div>
+        <div class="tech-info">
+          <div class="tech-name">MSW 1.2 — Mock Service Worker</div>
+          <div class="tech-desc">
+            在 Service Worker 層攔截真實 HTTP request，應用程式完全不知道自己在使用 mock。
+            同一組 handlers 在開發環境和測試環境（jest）都能使用。
+          </div>
+        </div>
+        <span class="tag" style="background:var(--teal-bg);color:var(--teal)">Mock API</span>
+      </div>
+      <div class="tech-card" style="--card-accent:var(--violet)">
+        <div class="tech-icon" style="background:var(--violet-bg);color:var(--violet)">SB7</div>
+        <div class="tech-info">
+          <div class="tech-name">Storybook 7</div>
+          <div class="tech-desc">
+            元件在隔離環境下開發與文件化，測試各種 props 組合（正常、loading、error、empty）。
+            設計師直接驗收，不需啟動完整應用。
+          </div>
+        </div>
+        <span class="tag" style="background:var(--violet-bg);color:var(--violet)">UI Docs</span>
+      </div>
+    </div>
+
+    <!-- Toolchain Overview -->
+    <div class="section-title" style="font-size:16px;margin-bottom:14px">工具鏈總覽</div>
+    <div class="toolchain-grid">
+      <div class="toolchain-item" style="border-top:2px solid var(--blue)">
+        <div class="tc-label">代碼品質</div>
+        <div class="tc-value">ESLint + Prettier + TypeScript strict</div>
+        <div class="tc-detail">零警告政策</div>
+      </div>
+      <div class="toolchain-item" style="border-top:2px solid var(--sage)">
+        <div class="tc-label">測試</div>
+        <div class="tc-value">Jest 29 + ts-jest + MSW</div>
+        <div class="tc-detail">單元測試 + API mock</div>
+      </div>
+      <div class="toolchain-item" style="border-top:2px solid var(--violet)">
+        <div class="tc-label">元件開發</div>
+        <div class="tc-value">Storybook 7</div>
+        <div class="tc-detail">視覺隔離 + 設計師驗收</div>
+      </div>
+      <div class="toolchain-item" style="border-top:2px solid var(--amber)">
+        <div class="tc-label">Git 管理</div>
+        <div class="tc-value">Husky + lint-staged + commitlint</div>
+        <div class="tc-detail">Conventional Commits</div>
+      </div>
+      <div class="toolchain-item" style="border-top:2px solid var(--teal)">
+        <div class="tc-label">建置</div>
+        <div class="tc-value">Vite 4 + tsc</div>
+        <div class="tc-detail">開發 HMR + 型別檢查</div>
+      </div>
+      <div class="toolchain-item" style="border-top:2px solid var(--subtle)">
+        <div class="tc-label">樣式</div>
+        <div class="tc-value">Bootstrap 5 + SCSS Modules</div>
+        <div class="tc-detail">Grid 基礎 + scope 隔離</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION 3: DESIGN INTENT ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">03 · 為學生的刻意設計 — Design Intent</div>
+
+    <div class="data-table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead>
+          <tr><th>設計</th><th>目的</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="td-name">MSW handlers 已預先定義</span></td>
+            <td class="td-muted">學生專注在實作元件，不被 API 串接問題卡住</td>
+          </tr>
+          <tr>
+            <td><span class="td-name">TypeScript 型別已定義</span></td>
+            <td class="td-muted">強迫學生看清楚 API 回傳的資料結構，編譯期就能發現錯誤</td>
+          </tr>
+          <tr>
+            <td><span class="td-name">ESLint 零警告</span></td>
+            <td class="td-muted">不讓壞習慣累積，第一天就是最高標準</td>
+          </tr>
+          <tr>
+            <td><span class="td-name">Conventional Commits</span></td>
+            <td class="td-muted">從第一個 commit 開始練習業界規範，而非事後補救</td>
+          </tr>
+          <tr>
+            <td><span class="td-name">Storybook stories 已有骨架</span></td>
+            <td class="td-muted">降低門檻，學生照範例擴充即可，專注在 UI 邏輯</td>
+          </tr>
+          <tr>
+            <td><span class="td-name">Context 已架好骨架</span></td>
+            <td class="td-muted">學生理解怎麼「用」Context，進階再學「怎麼設計」</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quote-box">
+      <div class="quote-text">
+        選型原則：<strong>讓工具處理複雜度，讓學生專注在真正重要的事情上。</strong>
+        Vite 讓建置不是問題，MSW 讓後端不是瓶頸，TypeScript 讓型別錯誤在編譯期就浮現，
+        TanStack Query 讓 loading / error 狀態不需手動管理。
+        每一個選型都有明確的「解決什麼問題」的答案。
+      </div>
+      <div class="quote-attribution">alphacast-frontend · 技術選型原則</div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <span class="footer-left">alphacast-frontend &nbsp;·&nbsp; ALPHACamp 學生畢業專案 &nbsp;·&nbsp; YuriTsaiTW/capstone-alphacast-starter</span>
+    <span class="footer-right">Topic 03 · 代碼風格與技術選型</span>
+  </footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dogcatstar.com · 效能分析報告</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f4ede6;
+      --surface:  #ece3d8;
+      --card:     #ece3d8;
+      --card-hov: #e2d5c5;
+      --border:   rgba(90, 60, 40, 0.14);
+      --text:     #2a2018;
+      --muted:    #7a6050;
+      --subtle:   #c0a898;
+
+      --poor:     #b03020;
+      --warn:     #9a6010;
+      --good:     #3a7a50;
+      --poor-bg:  rgba(176, 48, 32, 0.09);
+      --warn-bg:  rgba(154, 96, 16, 0.09);
+      --good-bg:  rgba(58, 122, 80, 0.09);
+
+      --p0:       #b03020;
+      --p1:       #9a6010;
+      --p2:       #5a7a40;
+
+      --accent:   #5a8aa0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    main { max-width: 1360px; margin: 0 auto; }
+
+    /* ══ HERO ══ */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 48px;
+      padding: 60px 64px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 5px 14px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 4.5vw, 58px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--poor);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 480px;
+    }
+
+    /* Score badge */
+    .score-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 160px;
+      height: 160px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      flex-shrink: 0;
+      gap: 4px;
+    }
+    .score-badge .score-num {
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--poor);
+    }
+    .score-badge .score-lbl {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ══ STATS BAR ══ */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      padding: 20px 40px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val {
+      font-size: 30px;
+      font-weight: 700;
+    }
+    .stat-lbl {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ══ SECTION ══ */
+    .section {
+      padding: 48px 64px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-eyebrow {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    /* ══ SCORE GRID ══ */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .score-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .score-card-val {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .score-card-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .score-card-rating {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      width: fit-content;
+      margin-top: 2px;
+    }
+
+    /* ══ DATA TABLE ══ */
+    .data-table-wrap { overflow-x: auto; margin-bottom: 32px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      line-height: 1.5;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(90, 60, 40, 0.04); }
+
+    .metric-name { font-weight: 600; color: var(--text); }
+    .metric-abbr {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+    }
+    .metric-val { font-weight: 600; font-size: 15px; }
+    .threshold {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--subtle);
+    }
+
+    /* Status dots */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-poor   { color: var(--poor); background: var(--poor-bg); }
+    .status-poor::before { background: var(--poor); }
+    .status-warn   { color: var(--warn); background: var(--warn-bg); }
+    .status-warn::before { background: var(--warn); }
+    .status-good   { color: var(--good); background: var(--good-bg); }
+    .status-good::before { background: var(--good); }
+
+    /* ══ ROOT CAUSE CARDS ══ */
+    .cause-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 0;
+    }
+    .cause-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+    .cause-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .cause-pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cause-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .cause-items { display: flex; flex-direction: column; gap: 10px; }
+    .cause-item {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      padding-left: 14px;
+      border-left: 2px solid var(--border);
+    }
+    .cause-item strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+    /* ══ PLAN TABLE ══ */
+    .priority-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .p0 { background: var(--poor-bg);  color: var(--poor); }
+    .p1 { background: var(--warn-bg);  color: var(--warn); }
+    .p2 { background: var(--good-bg);  color: var(--good); }
+    .savings {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--good);
+      background: var(--good-bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    /* ══ LONG TERM TABLE ══ */
+    .layer-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      white-space: nowrap;
+      background: rgba(90, 138, 160, 0.12);
+      color: var(--accent);
+    }
+
+    /* ══ TARGET METRICS ══ */
+    .target-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    /* ══ ARCH BOX ══ */
+    .arch-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .arch-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .arch-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 4px;
+      flex-shrink: 0;
+    }
+    .arch-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .arch-line {
+      width: 1px;
+      flex: 1;
+      min-height: 18px;
+      background: var(--border);
+      margin: 3px 0;
+    }
+    .arch-content {
+      padding-bottom: 16px;
+      flex: 1;
+    }
+    .arch-content:last-child { padding-bottom: 0; }
+    .arch-node {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .arch-note {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .arch-step:last-child .arch-line { display: none; }
+
+    /* ══ PHASE CARDS ══ */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .phase-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+    .phase-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .phase-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .phase-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .phase-outcome {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--good);
+      background: var(--good-bg);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    /* ══ CWV FAIL BANNER ══ */
+    .cwv-fail {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--poor-bg);
+      border: 1px solid rgba(176, 48, 32, 0.2);
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--poor);
+    }
+    .cwv-fail svg { flex-shrink: 0; }
+
+    /* ══ DATA NOTE ══ */
+    .data-note {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--subtle);
+      margin-bottom: 14px;
+    }
+
+    /* ══ TWO COL ══ */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+    /* ══ FOOTER ══ */
+    footer {
+      padding: 24px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+    .footer-left, .footer-right {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer-right { color: var(--subtle); }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero">
+    <div>
+      <div class="hero-eyebrow">dogcatstar.com &nbsp;·&nbsp; PageSpeed Insights &nbsp;·&nbsp; 2026-03-10</div>
+      <h1>效能分析<br /><em>診斷與改善方案</em></h1>
+      <p class="hero-sub">
+        基於 Lighthouse 13.0.1（Moto G Power · 4G）的行動裝置效能分析，
+        涵蓋現況評估、根因診斷、短期優化與長期架構演進方案。
+      </p>
+    </div>
+    <div class="score-badge">
+      <span class="score-num">30</span>
+      <span class="score-lbl">Performance</span>
+    </div>
+  </header>
+
+  <!-- ═══ STATS BAR ═══ -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-val" style="color:var(--poor)">1.8s</span>
+      <span class="stat-lbl">TTFB · Server 回應</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--warn)">2.8s</span>
+      <span class="stat-lbl">LCP · Field Data</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--warn)">302ms</span>
+      <span class="stat-lbl">INP · Field Data</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" style="color:var(--poor)">3,080ms</span>
+      <span class="stat-lbl">TBT · Lab Data</span>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 1: CURRENT STATE ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">01 · 現況評估 — Current State</div>
+
+    <!-- Lighthouse Scores -->
+    <div class="section-title">Lighthouse 總分</div>
+    <div class="score-grid">
+      <div class="score-card" style="border-left: 3px solid var(--poor);">
+        <span class="score-card-val" style="color:var(--poor)">30</span>
+        <span class="score-card-name">Performance</span>
+        <span class="score-card-rating status status-poor">Poor</span>
+      </div>
+      <div class="score-card" style="border-left: 3px solid var(--warn);">
+        <span class="score-card-val" style="color:var(--warn)">67</span>
+        <span class="score-card-name">Accessibility</span>
+        <span class="score-card-rating status status-warn">Needs Improvement</span>
+      </div>
+      <div class="score-card" style="border-left: 3px solid var(--good);">
+        <span class="score-card-val" style="color:var(--good)">96</span>
+        <span class="score-card-name">Best Practices</span>
+        <span class="score-card-rating status status-good">Good</span>
+      </div>
+      <div class="score-card" style="border-left: 3px solid var(--good);">
+        <span class="score-card-val" style="color:var(--good)">92</span>
+        <span class="score-card-name">SEO</span>
+        <span class="score-card-rating status status-good">Good</span>
+      </div>
+    </div>
+
+    <!-- CWV Field Data -->
+    <div class="cwv-fail">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="10" y1="6" x2="10" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="10" cy="14" r="1.2" fill="currentColor"/>
+      </svg>
+      Core Web Vitals 評估結果：失敗（LCP、INP 均未達標）
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="section-title" style="font-size:16px;">Core Web Vitals · Field Data</div>
+        <p class="data-note">資料期間：過去 28 天，多種行動設備與網路連線</p>
+        <div class="data-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>指標</th>
+                <th>數值</th>
+                <th>評等</th>
+                <th>門檻</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="metric-name">LCP</span><span class="metric-abbr">Largest Contentful Paint</span></td>
+                <td><span class="metric-val" style="color:var(--warn)">2.8s</span></td>
+                <td><span class="status status-warn">Needs Improvement</span></td>
+                <td><span class="threshold">&lt; 2.5s Good</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">INP</span><span class="metric-abbr">Interaction to Next Paint</span></td>
+                <td><span class="metric-val" style="color:var(--warn)">302ms</span></td>
+                <td><span class="status status-warn">Needs Improvement</span></td>
+                <td><span class="threshold">&lt; 200ms Good</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">CLS</span><span class="metric-abbr">Cumulative Layout Shift</span></td>
+                <td><span class="metric-val" style="color:var(--good)">0.02</span></td>
+                <td><span class="status status-good">Good</span></td>
+                <td><span class="threshold">&lt; 0.1 Good</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">FCP</span><span class="metric-abbr">First Contentful Paint</span></td>
+                <td><span class="metric-val" style="color:var(--warn)">2.4s</span></td>
+                <td><span class="status status-warn">Needs Improvement</span></td>
+                <td><span class="threshold">&lt; 1.8s Good</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">TTFB</span><span class="metric-abbr">Time to First Byte</span></td>
+                <td><span class="metric-val" style="color:var(--poor)">1.8s</span></td>
+                <td><span class="status status-poor">Poor</span></td>
+                <td><span class="threshold">&lt; 0.8s Good</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title" style="font-size:16px;">Lab Data · Lighthouse 模擬</div>
+        <p class="data-note">冷啟動 4G 環境；Lab data 與 Field data 有落差（CDN cache hit）</p>
+        <div class="data-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>指標</th>
+                <th>數值</th>
+                <th>評等</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="metric-name">FCP</span></td>
+                <td><span class="metric-val" style="color:var(--poor)">3.5s</span></td>
+                <td><span class="status status-poor">Poor</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">LCP</span></td>
+                <td><span class="metric-val" style="color:var(--poor)">7.2s</span></td>
+                <td><span class="status status-poor">Poor</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">TBT</span><span class="metric-abbr">Total Blocking Time</span></td>
+                <td><span class="metric-val" style="color:var(--poor)">3,080ms</span></td>
+                <td><span class="status status-poor">Poor</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">CLS</span></td>
+                <td><span class="metric-val" style="color:var(--good)">0.041</span></td>
+                <td><span class="status status-good">Good</span></td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">Speed Index</span></td>
+                <td><span class="metric-val" style="color:var(--poor)">23.4s</span></td>
+                <td><span class="status status-poor">Poor</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION 2: ROOT CAUSE ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">02 · 根因診斷 — Root Cause Analysis</div>
+
+    <!-- Opportunities -->
+    <div class="section-title">Opportunities（可量化改善機會）</div>
+    <div class="data-table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>問題</th>
+            <th>預估節省</th>
+            <th>影響指標</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">01</td>
+            <td><span class="metric-name">使用有效的快取生命週期</span></td>
+            <td><span class="savings">5,324 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">重複訪問速度</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">02</td>
+            <td><span class="metric-name">轉譯封鎖要求</span><span class="metric-abbr">Render-blocking resources</span></td>
+            <td><span class="savings">2,090ms</span></td>
+            <td style="font-size:12px;color:var(--muted)">FCP、LCP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">03</td>
+            <td><span class="metric-name">提升圖片傳送效能</span><span class="metric-abbr">未壓縮 / 非 WebP</span></td>
+            <td><span class="savings">2,900 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">LCP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">04</td>
+            <td><span class="metric-name">舊版 JavaScript</span><span class="metric-abbr">Legacy JS polyfills</span></td>
+            <td><span class="savings">57 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT、INP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">05</td>
+            <td><span class="metric-name">字型顯示</span><span class="metric-abbr">font-display 未設定</span></td>
+            <td><span class="savings">40ms</span></td>
+            <td style="font-size:12px;color:var(--muted)">FCP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">06</td>
+            <td><span class="metric-name">DOM 大小過大</span><span class="metric-abbr">WooCommerce shop 頁推估 &gt; 2,000 nodes</span></td>
+            <td><span class="threshold">—</span></td>
+            <td style="font-size:12px;color:var(--muted)">INP、TBT</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">07</td>
+            <td><span class="metric-name">第三方資源</span><span class="metric-abbr">GA4、FB Pixel、LINE Tag、客服 widget</span></td>
+            <td><span class="threshold">—</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT、FCP</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Diagnostics -->
+    <div class="section-title">Diagnostics（深層診斷）</div>
+    <div class="data-table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>診斷項目</th>
+            <th>數值</th>
+            <th>影響指標</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">01</td>
+            <td><span class="metric-name">減少 JavaScript 執行時間</span></td>
+            <td><span class="metric-val" style="color:var(--poor);font-size:13px">9.8s</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT、INP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">02</td>
+            <td><span class="metric-name">將主執行緒工作降到最低</span><span class="metric-abbr">20 項長任務</span></td>
+            <td><span class="metric-val" style="color:var(--poor);font-size:13px">16.6s</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT、INP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">03</td>
+            <td><span class="metric-name">減少無用的 JavaScript</span></td>
+            <td><span class="savings">1,024 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">04</td>
+            <td><span class="metric-name">減少無用的 CSS</span></td>
+            <td><span class="savings">144 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">FCP</td>
+          </tr>
+          <tr>
+            <td style="font-family:'Fira Code',monospace;color:var(--muted);font-size:12px">05</td>
+            <td><span class="metric-name">避免耗用大量網路資源</span></td>
+            <td><span class="metric-val" style="color:var(--poor);font-size:13px">7,823 KiB</span></td>
+            <td style="font-size:12px;color:var(--muted)">整體速度</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Root Cause Summary -->
+    <div class="section-title">問題根因彙整</div>
+    <div class="cause-grid">
+      <div class="cause-card" style="border-top: 3px solid var(--poor);">
+        <div class="cause-header">
+          <div class="cause-pip" style="background:var(--poor)"></div>
+          <span class="cause-label" style="color:var(--poor)">Critical — CWV 直接失敗</span>
+        </div>
+        <div class="cause-items">
+          <div class="cause-item">
+            <strong>TTFB 1.8s</strong>
+            WordPress + PHP 共用主機，無 Redis/Varnish 快取，每次請求都觸發 DB 查詢。LCP 慢的根本原因。
+          </div>
+          <div class="cause-item">
+            <strong>Render-blocking 2,090ms</strong>
+            多個 CSS/JS（外掛、主題）在 &lt;head&gt; 同步載入，阻塞首次渲染。
+          </div>
+          <div class="cause-item">
+            <strong>JS 執行時間 9.8s</strong>
+            jQuery + WooCommerce 外掛 + GA4、FB Pixel 全部在初始載入執行，產生大量 Long Tasks，INP 302ms。
+          </div>
+        </div>
+      </div>
+
+      <div class="cause-card" style="border-top: 3px solid var(--warn);">
+        <div class="cause-header">
+          <div class="cause-pip" style="background:var(--warn)"></div>
+          <span class="cause-label" style="color:var(--warn)">High Impact — 量大好處理</span>
+        </div>
+        <div class="cause-items">
+          <div class="cause-item">
+            <strong>圖片未優化（2,900 KiB）</strong>
+            商品圖與 banner 使用原始尺寸 JPEG，未轉換 WebP，無 loading="lazy"，LCP 元素缺 fetchpriority="high"。
+          </div>
+          <div class="cause-item">
+            <strong>無效快取（5,324 KiB）</strong>
+            靜態資源（外掛 CSS/JS）快取有效期過短，重複訪問仍需重新下載。
+          </div>
+          <div class="cause-item">
+            <strong>無用 JS 1,024 KiB + CSS 144 KiB</strong>
+            多外掛樣式全域載入，Coverage 極低（推估 &lt;30%）。
+          </div>
+        </div>
+      </div>
+
+      <div class="cause-card" style="border-top: 3px solid var(--subtle);">
+        <div class="cause-header">
+          <div class="cause-pip" style="background:var(--subtle)"></div>
+          <span class="cause-label" style="color:var(--muted)">Secondary — 次要影響</span>
+        </div>
+        <div class="cause-items">
+          <div class="cause-item">
+            <strong>DOM 節點過大</strong>
+            WooCommerce shop 頁推估 &gt; 2,000 節點，影響 INP 響應速度。
+          </div>
+          <div class="cause-item">
+            <strong>舊版 JS polyfills 57 KiB</strong>
+            現代瀏覽器已不需要的 polyfill 仍被載入，增加 TBT。
+          </div>
+          <div class="cause-item">
+            <strong>font-display 未設定</strong>
+            字型載入阻塞 FCP，可通過 font-display: swap 延遲 40ms。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION 3: IMPROVEMENT PLAN ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">03 · 改善方案 — Improvement Plan</div>
+
+    <!-- Short Term -->
+    <div class="section-title">短期（WordPress 框架內，2–4 週）</div>
+    <div class="data-table-wrap" style="margin-bottom:36px">
+      <table>
+        <thead>
+          <tr>
+            <th>優先級</th>
+            <th>項目</th>
+            <th>預期效益</th>
+            <th>作法</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="priority-tag p0">P0</span></td>
+            <td><span class="metric-name">啟用頁面快取</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">TTFB 1.8s → &lt;0.5s</td>
+            <td style="font-size:12px;color:var(--muted)">WP Rocket / W3 Total Cache，開啟全頁 HTML 快取</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p0">P0</span></td>
+            <td><span class="metric-name">LCP 圖片 fetchpriority</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">LCP 顯著改善</td>
+            <td style="font-size:12px;color:var(--muted)">首屏 hero image 加 <code style="font-family:'Fira Code',monospace">fetchpriority="high"</code>，移除 loading="lazy"</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p1">P1</span></td>
+            <td><span class="metric-name">圖片 WebP 轉換</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">節省 2,900 KiB</td>
+            <td style="font-size:12px;color:var(--muted)">Imagify / Smush 自動壓縮，或 Cloudflare Polish</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p1">P1</span></td>
+            <td><span class="metric-name">defer / async 第三方腳本</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">TBT -500ms+</td>
+            <td style="font-size:12px;color:var(--muted)">GA4、FB Pixel 改 <code style="font-family:'Fira Code',monospace">async</code>；客服 widget 改 lazy load</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p1">P1</span></td>
+            <td><span class="metric-name">font-display: swap</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">FCP -40ms</td>
+            <td style="font-size:12px;color:var(--muted)">在主題 functions.php 加入字型載入優化</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p2">P2</span></td>
+            <td><span class="metric-name">靜態資源長效快取</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">節省 5,324 KiB</td>
+            <td style="font-size:12px;color:var(--muted)">.htaccess 設定 Cache-Control max-age=31536000</td>
+          </tr>
+          <tr>
+            <td><span class="priority-tag p2">P2</span></td>
+            <td><span class="metric-name">停用非必要外掛</span></td>
+            <td style="font-size:12px;color:var(--good);font-weight:600">JS/CSS 減少</td>
+            <td style="font-size:12px;color:var(--muted)">清查外掛，使用 Asset CleanUp 按頁載入</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Long Term -->
+    <div class="section-title">長期（Next.js 現代架構重構，3–6 個月）</div>
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>層次</th>
+            <th>方案</th>
+            <th>解決的問題</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="layer-tag">Frontend</span></td>
+            <td><span class="metric-name">Next.js App Router + Server Components</span></td>
+            <td style="font-size:12px;color:var(--muted)">零 client-side JS bundle for static content，LCP &lt;2s</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">Images</span></td>
+            <td><span class="metric-name">next/image 自動 WebP + lazy load + blur placeholder</span></td>
+            <td style="font-size:12px;color:var(--muted)">LCP、CLS</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">Scripts</span></td>
+            <td><span class="metric-name">next/script strategy="lazyOnload"</span></td>
+            <td style="font-size:12px;color:var(--muted)">TBT、INP</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">Styles</span></td>
+            <td><span class="metric-name">StyleX zero-runtime atomic CSS</span></td>
+            <td style="font-size:12px;color:var(--muted)">無用 CSS 問題根治</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">Data</span></td>
+            <td><span class="metric-name">ISR（Incremental Static Regeneration）</span></td>
+            <td style="font-size:12px;color:var(--muted)">TTFB → Edge cache hit &lt;100ms</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">CDN</span></td>
+            <td><span class="metric-name">Cloudflare / Vercel Edge Network</span></td>
+            <td style="font-size:12px;color:var(--muted)">全球 TTFB 均一化</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">CMS</span></td>
+            <td><span class="metric-name">Headless WooCommerce REST API + Sanity/Contentful</span></td>
+            <td style="font-size:12px;color:var(--muted)">去除 PHP 渲染瓶頸</td>
+          </tr>
+          <tr>
+            <td><span class="layer-tag">Lists</span></td>
+            <td><span class="metric-name">React 虛擬化（TanStack Virtual）</span></td>
+            <td style="font-size:12px;color:var(--muted)">DOM 大小、INP</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION 4: TARGET ARCHITECTURE ═══ -->
+  <section class="section">
+    <div class="section-eyebrow">04 · 目標架構 — Target Architecture</div>
+
+    <div class="two-col" style="margin-bottom:36px">
+      <!-- Target Metrics -->
+      <div>
+        <div class="section-title" style="font-size:16px;">目標指標</div>
+        <div class="data-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>指標</th>
+                <th>現況</th>
+                <th>短期目標</th>
+                <th>長期目標</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="metric-name">Performance Score</span></td>
+                <td><span class="metric-val" style="color:var(--poor);font-size:13px">30</span></td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">≥ 60</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">≥ 90</td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">LCP</span></td>
+                <td style="font-size:12px;color:var(--muted)">2.8s / 7.2s</td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">&lt; 2.5s</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">&lt; 1.5s</td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">INP</span></td>
+                <td><span class="metric-val" style="color:var(--warn);font-size:13px">302ms</span></td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">&lt; 200ms</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">&lt; 100ms</td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">TTFB</span></td>
+                <td><span class="metric-val" style="color:var(--poor);font-size:13px">1.8s</span></td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">&lt; 0.8s</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">&lt; 0.2s (Edge)</td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">TBT</span></td>
+                <td><span class="metric-val" style="color:var(--poor);font-size:13px">3,080ms</span></td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">&lt; 500ms</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">&lt; 100ms</td>
+              </tr>
+              <tr>
+                <td><span class="metric-name">總資源大小</span></td>
+                <td style="font-size:12px;color:var(--muted)">7,823 KiB</td>
+                <td style="font-size:13px;font-weight:600;color:var(--warn)">&lt; 4,000 KiB</td>
+                <td style="font-size:13px;font-weight:600;color:var(--good)">&lt; 1,500 KiB</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Architecture Flow -->
+      <div>
+        <div class="section-title" style="font-size:16px;">理想架構流程</div>
+        <div class="arch-box">
+          <div class="arch-flow">
+            <div class="arch-step">
+              <div class="arch-connector">
+                <div class="arch-dot" style="background:var(--accent)"></div>
+                <div class="arch-line"></div>
+              </div>
+              <div class="arch-content">
+                <div class="arch-node">用戶請求</div>
+                <div class="arch-note">Browser → DNS → Edge</div>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-connector">
+                <div class="arch-dot" style="background:var(--good)"></div>
+                <div class="arch-line"></div>
+              </div>
+              <div class="arch-content">
+                <div class="arch-node">Cloudflare / Vercel Edge（全球 CDN）</div>
+                <div class="arch-note">Cache hit → HTML 直接回應，TTFB &lt; 100ms</div>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-connector">
+                <div class="arch-dot" style="background:var(--accent)"></div>
+                <div class="arch-line"></div>
+              </div>
+              <div class="arch-content">
+                <div class="arch-node">Next.js App Router（Server Component）</div>
+                <div class="arch-note">Cache miss → ISR Revalidation</div>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-connector">
+                <div class="arch-dot" style="background:var(--muted)"></div>
+                <div class="arch-line"></div>
+              </div>
+              <div class="arch-content">
+                <div class="arch-node">WooCommerce REST API / Headless CMS</div>
+                <div class="arch-note">Sanity / Contentful · 去除 PHP 渲染</div>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-connector">
+                <div class="arch-dot" style="background:var(--good)"></div>
+              </div>
+              <div class="arch-content">
+                <div class="arch-node">客戶端：最小化 JS Bundle</div>
+                <div class="arch-note">next/image · next/script lazyOnload · TanStack Virtual</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Migration Phases -->
+    <div class="section-title">遷移策略（漸進式）</div>
+    <div class="phase-grid">
+      <div class="phase-card" style="border-left: 3px solid var(--poor);">
+        <div class="phase-num">Phase 01</div>
+        <div class="phase-title">現況優化</div>
+        <div class="phase-desc">
+          在 WordPress 框架內啟用頁面快取、圖片 WebP 壓縮、第三方腳本 async/defer、LCP fetchpriority 優化。
+        </div>
+        <span class="phase-outcome">目標：CWV 達標</span>
+      </div>
+      <div class="phase-card" style="border-left: 3px solid var(--warn);">
+        <div class="phase-num">Phase 02</div>
+        <div class="phase-title">前端解耦</div>
+        <div class="phase-desc">
+          Next.js 接管前台頁面，WordPress 僅作 Headless API，實作 ISR 靜態生成，CDN edge cache 上線。
+        </div>
+        <span class="phase-outcome">目標：TTFB &lt; 0.8s</span>
+      </div>
+      <div class="phase-card" style="border-left: 3px solid var(--good);">
+        <div class="phase-num">Phase 03</div>
+        <div class="phase-title">全面現代化</div>
+        <div class="phase-desc">
+          StyleX zero-runtime CSS、Server Components 極小化 JS bundle、TanStack Virtual 虛擬化長列表、Edge ISR 全覆蓋。
+        </div>
+        <span class="phase-outcome">目標：Performance ≥ 90</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <span class="footer-left">dogcatstar.com &nbsp;·&nbsp; PageSpeed Insights &nbsp;·&nbsp; Lighthouse 13.0.1 / Moto G Power / 4G</span>
+    <span class="footer-right">2026-03-10</span>
+  </footer>
+
+</main>
+</body>
+</html>
