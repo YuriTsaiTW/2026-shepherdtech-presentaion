@@ -474,6 +474,44 @@
     /* ══ TWO COL ══ */
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 
+    /* ══ LINKS BAR ══ */
+    .links-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 64px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .links-bar-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--subtle);
+      letter-spacing: 0.08em;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+    .link-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .link-chip:hover { background: var(--card-hov); color: var(--text); }
+    .link-chip-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
     /* ══ FOOTER ══ */
     footer {
       padding: 24px 64px;
@@ -527,6 +565,15 @@
       <span class="stat-val" style="color:var(--poor)">3,080ms</span>
       <span class="stat-lbl">TBT · Lab Data</span>
     </div>
+  </div>
+
+  <!-- ═══ LINKS BAR ═══ -->
+  <div class="links-bar">
+    <span class="links-bar-label">Links ·</span>
+    <a class="link-chip" href="https://pagespeed.web.dev/analysis/https-www-dogcatstar-com/0f7qarcn3p?form_factor=mobile" target="_blank" rel="noopener noreferrer">
+      <div class="link-chip-dot" style="background:var(--poor)"></div>
+      PageSpeed Insights 原始報告 · dogcatstar.com (Mobile) ↗
+    </a>
   </div>
 
   <!-- ═══ SECTION 1: CURRENT STATE ═══ -->
