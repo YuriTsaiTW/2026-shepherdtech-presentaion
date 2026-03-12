@@ -1501,6 +1501,75 @@ function App() {
         </FlexBox>
       </Slide>
 
+      {/* ── AI Tools Used ────────────────────────────────────────────────── */}
+      <Slide backgroundColor="primary">
+        <FlexBox
+          height="100%"
+          flexDirection="column"
+          alignItems="flex-start"
+          justifyContent="center"
+          padding="0 72px"
+        >
+          <Text
+            color="quaternary"
+            fontSize="13px"
+            fontWeight="bold"
+            letterSpacing="0.2em"
+            margin="0 0 12px"
+            style={{ textTransform: "uppercase" }}
+          >
+            AI 輔助工具
+          </Text>
+          <Box
+            height="3px"
+            width="48px"
+            backgroundColor="quaternary"
+            borderRadius="2px"
+            margin="0 0 28px"
+          />
+          <Heading
+            color="quinary"
+            fontSize="36px"
+            margin="0 0 32px"
+          >
+            準備這份簡報，我用了什麼 AI
+          </Heading>
+          <UnorderedList>
+            <ListItem>
+              <Text color="quinary" fontSize="20px" margin="0 0 4px">
+                <span style={{ color: "#9e6e62", fontWeight: 700 }}>Claude Code</span>
+                {" "}—{" "}
+                <span style={{ opacity: 0.85 }}>
+                  產出簡報整體架構與視覺風格；撰寫所有 Spectacle 投影片程式碼
+                </span>
+              </Text>
+            </ListItem>
+            <ListItem>
+              <Text color="quinary" fontSize="20px" margin="0 0 4px">
+                <span style={{ color: "#9e6e62", fontWeight: 700 }}>Claude Code</span>
+                {" "}—{" "}
+                <span style={{ opacity: 0.85 }}>
+                  分析目標專案（共用庫、ALPHA Cast），產出技術深潛報告與程式碼解析
+                </span>
+              </Text>
+            </ListItem>
+            <ListItem>
+              <Text color="quinary" fontSize="20px" margin="0 0 4px">
+                <span style={{ color: "#9e6e62", fontWeight: 700 }}>Claude Code + Chrome DevTools MCP</span>
+                {" "}—{" "}
+                <span style={{ opacity: 0.85 }}>
+                  網站效能分析全流程：Lighthouse 稽核、Core Web Vitals 判讀、改善建議報告
+                </span>
+              </Text>
+            </ListItem>
+          </UnorderedList>
+        </FlexBox>
+        <Notes>
+          說明這份簡報的製作過程大量借助 AI 工具加速：架構與視覺由 Claude Code 產出、
+          專案分析報告也由 AI 輔助完成、效能診斷流程則透過 Chrome DevTools MCP 自動化執行。
+        </Notes>
+      </Slide>
+
       {/* ── Closing ──────────────────────────────────────────────────────── */}
       <Slide backgroundColor="primary">
         <FlexBox
